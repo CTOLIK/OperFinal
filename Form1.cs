@@ -2,17 +2,15 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Data.SqlTypes;
 using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using Excel = Microsoft.Office.Interop.Excel;
+
 
 namespace WindowsFormsApp1
 {
@@ -21,17 +19,25 @@ namespace WindowsFormsApp1
         public string[,] array_zo;
         public string[,] array_ts;
         public string[,] dataar;
-        string filename;
+        //string filename;
         private int ERR_WIN = 0;
+        //private DataGridView dataGridView1 = new DataGridView();
+        private BindingSource bindingSource1 = new BindingSource();
 
-        
-        DataTable dt = new DataTable("Операторы");
-        DataTable TS = new DataTable();
-        DataTable ZO = new DataTable();
+        System.Data.DataTable dt = new System.Data.DataTable("Операторы");
+        System.Data.DataTable TS = new System.Data.DataTable();
+        System.Data.DataTable ZO = new System.Data.DataTable();
         public Form1()
         {
             InitializeComponent();
 
+        }
+
+        private void SortDataByMultiColumns()
+        {
+            //DataView view = ds.Tables[0].DefaultView;
+            //view.Sort = "day ASC, status DESC";
+            //dataGridView1.DataSource = view; //rebind the data source
         }
 
         public int TotalLines(string filePath)
@@ -56,95 +62,95 @@ namespace WindowsFormsApp1
                 {
                     времяВСостоянииToolStripMenuItem.Checked = true;
 
-                try
-                {
-                    TS.Columns.Add("Станок");
-                    TS.Columns.Add("Статус");
-                    TS.Columns.Add("Программа");
-                    TS.Columns.Add("Начало");
-                    TS.Columns.Add("Конец");
+                    try
+                    {
+                        TS.Columns.Add("Станок");
+                        TS.Columns.Add("Статус");
+                        TS.Columns.Add("Программа");
+                        TS.Columns.Add("Начало");
+                        TS.Columns.Add("Конец");
                         TS.Columns.Add("Длительность, ч.");
-                    
-                }
-                catch { }
+
+                    }
+                    catch { }
                     string result_ts, result1_ts;
                     string line;
-                //    if (radioButton3.Checked == true)
-                //{
-                //    TS.Clear();
-                //    dataGridView5.DataSource = null;
-                //    dataGridView5.Rows.Clear();
-                //} else if (radioButton4.Checked == true)
+                    //    if (radioButton3.Checked == true)
                     //{
-                        //MessageBox.Show("Я здесь!");
-                        openFD_TimeS.Multiselect = true;
+                    //    TS.Clear();
+                    //    dataGridView5.DataSource = null;
+                    //    dataGridView5.Rows.Clear();
+                    //} else if (radioButton4.Checked == true)
+                    //{
+                    //MessageBox.Show("Я здесь!");
+                    openFD_TimeS.Multiselect = true;
                     openFD_TimeS.Filter = "Отчёт 'Время в состоянии' WINNUM (*.txt)|*.txt";
                     foreach (string fileWin in openFD_TimeS.FileNames)
+                    {
+
+                        StreamReader sr_zo1 = new StreamReader(fileWin);
+                        string file_zo1 = File.ReadAllText(fileWin);
+                        result_ts = file_zo1.Replace(", ч.", "");
+                        result_ts = result_ts.Replace("\"", "");
+                        result_ts = result_ts.Replace("Fanuc серий T 30i,31i,32i,0iD,0iF", "");
+                        result_ts = result_ts.Replace("Тип данных,Серийный номер,Действия,Наименование,Модель,Статус,Программа,Начальное значение,Последнее значение,Длительность (ч.)", "");
+                        result_ts = result_ts.Replace("/r/n", "");
+                        File.WriteAllText(@"times.txt", result_ts);
+                        StreamReader reader_zo1 = new StreamReader(@"times.txt");
+                        array_ts = new string[TotalLines(@"times.txt"), 6];
+                        for (int k = 0; k < TotalLines(@"times.txt"); k++)
                         {
-                            
-                            StreamReader sr_zo1 = new StreamReader(fileWin);
-                            string file_zo1 = File.ReadAllText(fileWin);
-                            result_ts = file_zo1.Replace(", ч.", "");
-                            result_ts = result_ts.Replace("\"", "");
-                            result_ts = result_ts.Replace("Fanuc серий T 30i,31i,32i,0iD,0iF", "");
-                            result_ts = result_ts.Replace("Тип данных,Серийный номер,Действия,Наименование,Модель,Статус,Программа,Начальное значение,Последнее значение,Длительность (ч.)", "");
-                            result_ts = result_ts.Replace("/r/n", "");
-                            File.WriteAllText(@"times.txt", result_ts);
-                            StreamReader reader_zo1 = new StreamReader(@"times.txt");
-                            array_ts = new string[TotalLines(@"times.txt"), 6];
-                            for (int k = 0; k < TotalLines(@"times.txt"); k++)
+                            line = reader_zo1.ReadLine();
+                            string[] items = line.Split(',');
+                            if (items[0] != "")
                             {
-                                line = reader_zo1.ReadLine();
-                                string[] items = line.Split(',');
-                                if (items[0] != "")
+                                try
                                 {
-                                    try
-                                    {
-                                        array_ts[k, 0] = items[3];
-                                        array_ts[k, 1] = items[5];
-                                        array_ts[k, 2] = items[6];
-                                        array_ts[k, 3] = items[7].Substring(0, 19);
-                                        array_ts[k, 4] = items[8].Substring(0, 19);
-                                        string dlit = items[9] + '.' + items[10];
-                                        array_ts[k, 5] = dlit;
-                                    }
-                                    catch { }
+                                    array_ts[k, 0] = items[3];
+                                    array_ts[k, 1] = items[5];
+                                    array_ts[k, 2] = items[6];
+                                    array_ts[k, 3] = items[7].Substring(0, 19);
+                                    array_ts[k, 4] = items[8].Substring(0, 19);
+                                    string dlit = items[9] + '.' + items[10];
+                                    array_ts[k, 5] = dlit;
+                                }
+                                catch { }
+                            }
+                        }
+                        //MessageBox.Show(array_ts.Length.ToString());
+                        for (int j = 0; j < TotalLines(@"times.txt"); j++)
+                        {
+                            DataRow TS_row = TS.NewRow();
+                            for (int i = 0; i < 6; i++)
+                            {
+                                if (array_ts[j, i] != null)
+                                {
+                                    TS_row["Станок"] = array_ts[j, 0];
+                                    TS_row["Статус"] = array_ts[j, 1];
+                                    TS_row["Программа"] = array_ts[j, 2];
+                                    TS_row["Начало"] = Convert.ToDateTime(array_ts[j, 3]);
+                                    TS_row["Конец"] = Convert.ToDateTime(array_ts[j, 4]);
+                                    TS_row["Длительность, ч."] = array_ts[j, 5];
                                 }
                             }
-                        //MessageBox.Show(array_ts.Length.ToString());
-                            for (int j = 0; j < TotalLines(@"times.txt"); j++)
+                            if (TS_row.IsNull(1) != true)
                             {
-                                DataRow TS_row = TS.NewRow();
-                                for (int i = 0; i < 6; i++)
-                                {
-                                    if (array_ts[j, i] != null)
-                                    {
-                                        TS_row["Станок"] = array_ts[j, 0];
-                                        TS_row["Статус"] = array_ts[j, 1];
-                                        TS_row["Программа"] = array_ts[j, 2];
-                                        TS_row["Начало"] = Convert.ToDateTime(array_ts[j, 3]);
-                                        TS_row["Конец"] = Convert.ToDateTime(array_ts[j, 4]);
-                                        TS_row["Длительность, ч."] = array_ts[j, 5];
-                                    }
-                                }
-                                if (TS_row.IsNull(1) != true)
-                                {
 
                                 try
                                 {
                                     TS.Rows.Add(TS_row);
                                 }
                                 catch { }
-                                    
-                                }
-                                dataGridView5.DataSource = TS;
+
                             }
-                        //MessageBox.Show(dataGridView5.Rows.Count.ToString());
-                            reader_zo1.Close();
+                            dataGridView5.DataSource = TS;
                         }
+                        //MessageBox.Show(dataGridView5.Rows.Count.ToString());
+                        reader_zo1.Close();
+                    }
                 }
             }
-                
+
         }
 
         private void загрузкаОператоровToolStripMenuItem_Click(object sender, EventArgs e)
@@ -158,33 +164,33 @@ namespace WindowsFormsApp1
                 if (openFD_ZagrOper.ShowDialog() == DialogResult.OK)
                 {
                     загрузкаОператоровToolStripMenuItem.Checked = true;
-                try
-                {
-                    ZO.Columns.Add("ФИО");
-                    ZO.Columns.Add("Станок");
-                    ZO.Columns.Add("Станок включен");
-                    ZO.Columns.Add("Станок выключен");
-                }
-                catch { }
-                if (radioButton5.Checked == true)
-                {
-                    ZO.Clear();
-                }
-                string result_zo, result1_zo;
-                string line;
-                //comboBox1.Items.Clear();
-                //comboBox1.Text= string.Empty;
-                //comboBox2.Items.Clear();
-                //comboBox2.Text = string.Empty;
-                //dataGridView5.Rows.Clear();
-                openFD_ZagrOper.Filter = "Отчёт WINNUM (*.txt)|*.txt";
-                
+                    try
+                    {
+                        ZO.Columns.Add("ФИО");
+                        ZO.Columns.Add("Станок");
+                        ZO.Columns.Add("Станок включен");
+                        ZO.Columns.Add("Станок выключен");
+                    }
+                    catch { }
+                    if (radioButton5.Checked == true)
+                    {
+                        ZO.Clear();
+                    }
+                    string result_zo, result1_zo;
+                    string line;
+                    //comboBox1.Items.Clear();
+                    //comboBox1.Text= string.Empty;
+                    //comboBox2.Items.Clear();
+                    //comboBox2.Text = string.Empty;
+                    //dataGridView5.Rows.Clear();
+                    openFD_ZagrOper.Filter = "Отчёт WINNUM (*.txt)|*.txt";
+
                     StreamReader sr_zo = new StreamReader(openFD_ZagrOper.FileName);
                     string file_zo = File.ReadAllText(openFD_ZagrOper.FileName);
                     result_zo = file_zo.Replace(", ч.", "");
                     result_zo = result_zo.Replace("\"", "");
 
-                    result_zo = result_zo.Replace("Оператор,Оборудование,Загрузка оператора,Аварийная остановка,Коррекция ускоренного хода 50%,Коррекция ускоренного хода 25%,Коррекция ускоренного хода 0%,Коррекция подачи выше 100%,Коррекция подачи ниже 100%,Коррекция скорости выше 100%,Коррекция скорости ниже 100%,Программа выполняется,Другое,Нет калибров,Нет режущего инструмента,Ремонт,Поломка станка,Нет заготовки,Нет УП,Переналадка,Плановое техническое обслуживание,Станок включен,Станок выключен", "");
+                    result_zo = result_zo.Replace("Оператор,Оборудование,Загрузка оператора,Аварийная Останов, ч.ка,Коррекция ускоренного хода 50%,Коррекция ускоренного хода 25%,Коррекция ускоренного хода 0%,Коррекция подачи выше 100%,Коррекция подачи ниже 100%,Коррекция скорости выше 100%,Коррекция скорости ниже 100%,Программа выполняется,Другое,Нет калибров,Нет режущего инструмента,Ремонт,Поломка станка,Нет заготовки,Нет УП,Переналадка,Плановое техническое обслуживание,Станок включен,Станок выключен", "");
                     result_zo = result_zo.Replace("/r/n", "");
                     //textBox1.Text = result_zo;
                     //result1_zo = Regex.Replace(result_zo, "/r/n", "");
@@ -221,33 +227,6 @@ namespace WindowsFormsApp1
                     }
 
 
-                    //while ((line = reader_zo.ReadLine()) != null)
-                    //{
-                    //    k++;
-                    //    string[] items = line.Split(',');
-                    //    if (items[0] != "")
-                    //    {
-                    //        array_zo[k, 0] = items[0];
-                    //        //MessageBox.Show(items[1].ToString());
-                    //        array_zo[k, 1] = items[1];
-                    //        array_zo[k, 2] = items[15];
-                    //        array_zo[k, 3] = items[16];
-
-                    //textBox1.Text = array_zo[2];
-                    //MessageBox.Show(array_zo[2]);
-                    //DataRow row = dt.NewRow();
-                    //items[3] = Regex.Replace(items[3], "\"", "");
-                    //row["Оператор"] = items[3].Replace("\"", "");
-
-                    //for (int i = 0; i < 100; i++)
-                    //{
-                    //    progressBar1.Value = i;
-                    //}
-                    //    }
-
-                    //}
-                    //try {
-
                     for (int j = 0; j < TotalLines(@"zagr_oper.txt"); j++)
                     {
                         DataRow ZO_row = ZO.NewRow();
@@ -278,54 +257,59 @@ namespace WindowsFormsApp1
                     //} catch{}
                 }
             }
-            
+
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
             string polez_b_h, polez_b_m, polez_b_s, ostanov_b_h, ostanov_b_m, ostanov_b_s, pause_b_h, pause_b_m, pause_b_s;
             int polez_s, ostanov_s, pause_s;
-
+            progressBar1.Value = 0;
             openFD_VipOper.Filter = "Отчёт в TXT|*.txt";
             openFD_VipOper.DefaultExt = "*.txt";
             openFD_VipOper.FileName = "";
+            //if (выполненныеОперацииToolStripMenuItem.Checked == true)
+            //{
+            //    выполненныеОперацииToolStripMenuItem.Checked = false;
+            //}
+            //   else
+            //{
+                
 
-            if (выполненныеОперацииToolStripMenuItem.Checked == true)
+                
+                if ((openFD_VipOper.ShowDialog() == DialogResult.OK))
+                //& (filename != openFD_VipOper.FileName))
+               
             {
-                выполненныеОперацииToolStripMenuItem.Checked = false;
-            }
-            else { 
-            
                 dt.Clear();
                 comboBox1.Items.Clear();
                 comboBox2.Items.Clear();
-                comboBox1.Text = string.Empty;
-                comboBox2.Text = string.Empty;
+                //comboBox1.Text = string.Empty;
+                //comboBox2.Text = string.Empty;
                 выполненныеОперацииToolStripMenuItem.Checked = true;
-                if ((openFD_VipOper.ShowDialog() == DialogResult.OK))
-                    //& (filename != openFD_VipOper.FileName))
-                {
-                    foreach (string fileWin in openFD_VipOper.FileNames)
+                foreach (string fileWin in openFD_VipOper.FileNames)
                     {
                         выполненныеОперацииToolStripMenuItem.Checked = true;
-                        
-                        
+
+
                         dataGridView1.DataSource = null;
                         if (radioButton1.Checked == true)
                         {
                             dt.Clear();
                         }
-                        dataGridView1.Rows.Clear();
-                        filename = fileWin;
+                        //dataGridView1.Rows.Clear();
+                        //filename = fileWin;
                         string result1;
                         string line;
                         string file = File.ReadAllText(fileWin);
                         string result = Regex.Replace(file, "\\[([^\\s]*)\\]", "");
-                        result = result.Replace(",\"График выполнения программы [в новом окне]\"", "");
-                        result = result.Replace("\"Имя программы\",Обозначение,Оборудование,Оператор,Начало,Завершение,Кадры,\"Завершенная операция\",\"Машинное время\",Остановы,\"Время изготовления\",Пауза", "");
+                       // result = result.Replace(",\"График выполнения программы [в новом окне]\"", "");
+                        result = result.Replace("\"Имя программы\",Обозначение,Оборудование,Оператор,Начало,Завершение,Кадры,\"Завершенная операция\",\"Машинное время\",Остановы,\"Время изготовления\",Пауза,\"График выполнения программы [в новом окне]\"", "");
                         result = result.Replace("\"", "");
+                        result = result.Replace("KOL,CO", "");
+                        result = result.Replace("KOL,CO", "");
                         result1 = Regex.Replace(result, "/r/n", "");
-
+                        
                         File.WriteAllText(@"result.txt", result1);
 
                         StreamReader reader1 = new StreamReader(@"result.txt");
@@ -335,65 +319,147 @@ namespace WindowsFormsApp1
                             string[] items = line.Split(',');
                             if (items[0] != "")
                             {
-                                DataRow row = dt.NewRow();
+                            DataRow row = dt.NewRow();
+                                if (items[3] != "")
+                            {
                                 items[3] = Regex.Replace(items[3], "\"", "");
+                                items[1] = Regex.Replace(items[1], "KOL,CO", "");
+                                items[1] = Regex.Replace(items[1], "KOL,CO", "");
                                 row["Оператор"] = items[3].Replace("\"", "");
                                 if (!comboBox1.Items.Contains(items[3].Replace("\"", "")))
                                 {
                                     comboBox1.Items.Add(items[3].Replace("\"", ""));
                                     comboBox2.Items.Add(items[3].Replace("\"", ""));
                                 }
-                                row["Обозначение"] = items[1];
+                            }
+                                
+                               // MessageBox.Show(items[1].ToString());
+                              
+                                row["Обозначение"] = items[1]; 
                                 row["Программа"] = items[0];
                                 row["Оборудование"] = items[2];
                                 row["Начало"] = items[4].ToString().Replace("\"", "");
                                 row["Завершение"] = items[5].ToString().Replace("\"", "");
                                 row["Машинное время, ч."] = items[8].ToString().Replace("\"", "");
                                 row["Остановы, ч."] = items[9].ToString().Replace("\"", "");
-                                row["Пауза, ч."] = items[11].ToString().Replace("\"", "");
-                                polez_b_h = items[8].ToString().Substring(0, 2);
-                                polez_b_m = items[8].ToString().Substring(3, 2);
-                                polez_b_s = items[8].ToString().Substring(6, 2);
-                                polez_s = Convert.ToInt32(polez_b_s);
-                                polez_s = polez_s + (Convert.ToInt32(polez_b_m) * 60);
-                                polez_s = polez_s + (Convert.ToInt32(polez_b_h) * 3600);
-                                row["Числитель, с."] = polez_s;
-                                ostanov_b_h = items[9].ToString().Substring(0, 2);
-                                ostanov_b_m = items[9].ToString().Substring(3, 2);
-                                ostanov_b_s = items[9].ToString().Substring(6, 2);
-                                ostanov_s = Convert.ToInt32(ostanov_b_s);
-                                ostanov_s = ostanov_s + (Convert.ToInt32(ostanov_b_m) * 60);
-                                ostanov_s = ostanov_s + (Convert.ToInt32(ostanov_b_h) * 3600);
-                                if (items[11].Length > 0)
-                                {
-                                    pause_b_h = items[11].ToString().Substring(0, 2);
-                                    pause_b_m = items[11].ToString().Substring(3, 2);
-                                    pause_b_s = items[11].ToString().Substring(6, 2);
-                                    try { pause_s = Convert.ToInt32(pause_b_s); }
-                                    catch { MessageBox.Show("В выражении произошла ошибка на стороне WINNUM: '" + items[11] + "'"); reader1.Close(); ERR_WIN = 20; comboBox1.Items.Clear(); comboBox2.Items.Clear(); comboBox1.Text = ""; comboBox2.Text = ""; dataGridView2.DataSource = null; dataGridView2.Rows.Clear(); dataGridView3.DataSource = null; dataGridView3.Rows.Clear(); textBox1.Clear(); textBox2.Clear(); textBox3.Clear(); textBox10.Clear(); textBox11.Clear(); textBox12.Clear(); ; return; }
-                                    pause_s = pause_s + (Convert.ToInt32(pause_b_m) * 60);
-                                    pause_s = pause_s + (Convert.ToInt32(pause_b_h) * 3600);
-                                    row["Знаменатель, с."] = pause_s + ostanov_s;
-                                }
-                                else
-                                {
-                                    pause_s = 0;
-                                    row["Знаменатель, с."] = pause_s + ostanov_s;
-                                }
-                                dt.Rows.Add(row);
+                                if (items[11].ToString().Length > 8)
+                            {
+                                items[11] = items[11].ToString().Substring(1,8);
                             }
-                        }
+                           ////// MessageBox.Show(items[11].ToString());
+                                row["Пауза, ч."] = items[11].ToString().Replace("\"", "");
+                                if (!items[8].ToString().Contains("-"))
+                                {
+                                    polez_b_h = items[8].ToString().Substring(0, 2);
+                                    //if (polez_b_h=="Не")
+                                    //{
+                                    //    MessageBox.Show(line);
+                                    //    MessageBox.Show(fileWin);
+
+                                    //}
+                                    polez_b_m = items[8].ToString().Substring(3, 2);
+
+                                    polez_b_s = items[8].ToString().Substring(6, 2);
+                                    polez_s = Convert.ToInt32(polez_b_s);
+                                    polez_s = polez_s + (Convert.ToInt32(polez_b_m) * 60);
+                                    polez_s = polez_s + (Convert.ToInt32(polez_b_h) * 3600);
+                                    row["Числитель, с."] = polez_s;
+                                    ostanov_b_h = items[9].ToString().Substring(0, 2);
+                                    ostanov_b_m = items[9].ToString().Substring(3, 2);
+                                    ostanov_b_s = items[9].ToString().Substring(6, 2);
+                                    ostanov_s = Convert.ToInt32(ostanov_b_s);
+                                    ostanov_s = ostanov_s + (Convert.ToInt32(ostanov_b_m) * 60);
+                                    ostanov_s = ostanov_s + (Convert.ToInt32(ostanov_b_h) * 3600);
+                                    if (items[11].Length > 0)
+                                    {
+
+                                    if (!items[11].ToString().Contains("-"))
+                                    {
+
+                                        pause_b_h = items[11].ToString().Substring(0, 2);
+                                        pause_b_m = items[11].ToString().Substring(3, 2);
+                                        pause_b_s = items[11].ToString().Substring(6, 2);
+                                        //try { pause_s = Convert.ToInt32(pause_b_s); }
+                                        //catch
+                                        //{
+                                        //    pause_s = 0;
+                                        //}
+                                        pause_s = 0;
+                                        try { pause_s = Convert.ToInt32(pause_b_s); }
+                                        catch
+                                        {
+                                            items[11] = items[11].ToString().Substring(1);
+                                           // MessageBox.Show("В выражении произошла ошибка на стороне WINNUM в поле \"Пауза\" документа \"" + System.IO.Path.GetFileNameWithoutExtension(fileWin) + "\" : '" + items[11] + "'"); //reader1.Close(); //ERR_WIN = 20; comboBox1.Items.Clear(); comboBox2.Items.Clear(); comboBox1.Text = ""; comboBox2.Text = ""; dataGridView2.DataSource = null; dataGridView2.Rows.Clear(); dataGridView3.DataSource = null; dataGridView3.Rows.Clear(); textBox1.Clear(); textBox2.Clear(); textBox3.Clear(); textBox10.Clear(); textBox11.Clear(); textBox12.Clear();
+                                            pause_b_h = items[11].ToString().Substring(0, 2);
+                                            pause_b_m = items[11].ToString().Substring(3, 2);
+                                            pause_b_s = items[11].ToString().Substring(6, 2);
+
+                                        }
+                                        //return; }     
+                                        pause_s = pause_s + (Convert.ToInt32(pause_b_m) * 60);
+                                            pause_s = pause_s + (Convert.ToInt32(pause_b_h) * 3600);
+                                            row["Знаменатель, с."] = pause_s + ostanov_s;
+                                        }
+                                        else
+                                        {
+                                            pause_s = 0;
+                                            pause_b_h = "0";
+                                            pause_b_m = "0";
+                                            pause_s = pause_s + (Convert.ToInt32(pause_b_m) * 60);
+                                            pause_s = pause_s + (Convert.ToInt32(pause_b_h) * 3600);
+                                            row["Знаменатель, с."] = pause_s + ostanov_s;
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        pause_s = 0;
+                                        row["Знаменатель, с."] = pause_s + ostanov_s;
+                                    }
+                                    dt.Rows.Add(row);
+                                }
+                                    
+                            }
+                        comboBox1.Sorted = true;
+                        comboBox2.Sorted = true;
+                    }
                         reader1.Close();
 
-                        dataGridView1.DataSource = dt;
-                        dataGridView1.Sort(dataGridView1.Columns[3], ListSortDirection.Ascending);
+                    
+
+
+                   
+                        //dataGridView1.Sort(dataGridView1.Columns[4], ListSortDirection.Ascending);
+                        dataar = new string[11, dataGridView1.Rows.Count];
+                        for (int k = 0; k < dataGridView1.Rows.Count; k++)
+                        {
+                            //try
+                            //{
+                            dataar[0, k] = dataGridView1[0, k].Value.ToString();
+                            //MessageBox.Show(items[1].ToString());
+                            dataar[1, k] = dataGridView1[1, k].Value.ToString();
+                            dataar[2, k] = dataGridView1[2, k].Value.ToString();
+                            dataar[3, k] = dataGridView1[3, k].Value.ToString();
+                            dataar[4, k] = dataGridView1[4, k].Value.ToString();
+                            dataar[5, k] = dataGridView1[5, k].Value.ToString();
+                            dataar[6, k] = dataGridView1[6, k].Value.ToString();
+                            dataar[7, k] = dataGridView1[7, k].Value.ToString();
+                            dataar[8, k] = dataGridView1[8, k].Value.ToString();
+                            dataar[9, k] = dataGridView1[9, k].Value.ToString();
+                            dataar[10, k] = dataGridView1[10, k].Value.ToString();
+                            // }
+                            //catch { }
+
+                        }
                     }
                     ERR_WIN = 0;
                 }
+            DataView view = dt.DefaultView;
+            view.Sort = "Оборудование ASC, Начало ASC";
+            dataGridView1.DataSource = view;
+        }
 
-            }
-                
-            
+
             //if (ERR_WIN == 20)
             //{
             //    reader1.Close();
@@ -409,84 +475,260 @@ namespace WindowsFormsApp1
             //    reader1.Close();
             //    ERR_WIN = 0;
             //}
-            
-        }
 
-        private void repoday()
+        //}
+
+        private void repoday(string operst)
         {
-            DataTable dt_repod = new DataTable();
-            DataRow dr_repod = dt_repod.NewRow();
-            dt_repod.Columns.Add("День");
-            dt_repod.Columns.Add("Станок");
-            dt_repod.Columns.Add("Машинное время");
-            dt_repod.Columns.Add("Пауза");
-            dt_repod.Columns.Add("Останов");
-            dt_repod.Columns.Add("КПД, %");
-            //for (int i = 0; i < dataGridView1.Rows.Count; i++)
-            //{
-            //if (dataGridView4.Rows.Count > 0)
-            //{
-            //foreach (DataGridViewRow row in dataGridView1.Rows)
-            //{
-            //    string st = row.Cells["Начало"].ToString().Substring(0,10);
-            //    if ()
-            //    {
-
-            //    }
-
-            void finddg(string day)
+            dataGridView3.Rows.Clear();
+            dataGridView3.Columns.Clear();
+            //dataGridView5.DataSource = TS
+            if (operst == "")
             {
-                for (int p = 0; p < 5; p++)
+                return;
+            }
+            comboras(operst, dataGridView3, textBox12, textBox11, textBox10, textBox7, label20, label19, label25, label27);
+
+            //comboBox1.Sorted = true;
+            int count_smen = 0;
+            List<string> id_start_days = new List<string>();
+            List<string> id_end_days = new List<string>();
+            List<string> stanok_list = new List<string>();
+            //List<double> pause_ar = new List<double>();
+            //List<double> ostanov_ar = new List<double>();
+            //List<double> mash_ar = new List<double>();
+            id_start_days.Add(dataGridView1["Начало", 0].Value.ToString());
+            stanok_list.Add(dataGridView1["Оборудование", 0].Value.ToString());
+            TimeSpan stan = TimeSpan.Parse("-24:00:00");
+            for (int i = 0; i < dataGridView1.Rows.Count - 1; i++)
+            {
+                DateTime day_end = Convert.ToDateTime(dataGridView1["Завершение", i].Value);
+                TimeSpan period = Convert.ToDateTime(dataGridView1["Завершение", i + 1].Value) - day_end;
+                string stanok = dataGridView1["Оборудование", i].Value.ToString();
+                if ((period > Convert.ToDateTime("11.11.2011 04:00:00") - Convert.ToDateTime("11.11.2011 00:00:00")) || (stanok != dataGridView1["Оборудование", i + 1].Value.ToString()))
                 {
-                    try
-                    {
-                        if (!dataGridView4["День", p].Value.ToString().Contains(day))
-                        {
-                            MessageBox.Show(day);
-                        }
-                    }
-                    catch { }
+                    // dataGridView1.Rows[i].DefaultCellStyle.BackColor = Color.Red;
+                    count_smen++;
+                    //id_end_days.Add(dataGridView1["Завершение", i].Value.ToString());
+                    //id_str.Add(i);
                 }
             }
-            //}
 
-            for (int i = 0; i < dataGridView1.Rows.Count; i++)
+            int begin = 0;
+            for (int i = begin; i < dataGridView1.Rows.Count - 1; i++)
             {
-                
-                    string st = dataGridView1["Начало",i].ToString().Substring(0, 10);
-                    //if (!dataGridView4.Rows[j].Cells["День"].Value.ToString().Contains(st))
-                    //{
-                    //    MessageBox.Show(st);
-                    //} ;
+                string itog_period, start_day, end_day;
 
-                    finddg(st);
-                
-                
+                DateTime day_end = Convert.ToDateTime(dataGridView1["Завершение", i].Value);
+                DateTime smena_end;
+                DateTime smena_start;
+                TimeSpan period = Convert.ToDateTime(dataGridView1["Завершение", i + 1].Value) - day_end;
+                string min_out = "";
+                string stanok = dataGridView1["Оборудование", i].Value.ToString();
+                if ((period > Convert.ToDateTime("11.11.2011 04:00:00") - Convert.ToDateTime("11.11.2011 00:00:00")) || (stanok != dataGridView1["Оборудование", i + 1].Value.ToString()))//|| (i==0))
+                {
+                    if (stanok != dataGridView1["Оборудование", i + 1].Value.ToString())
+                    {
+                        smena_end = day_end;
+                        dataGridView1.Rows[i].DefaultCellStyle.BackColor = Color.Blue;
+                        id_end_days.Add(dataGridView1["Завершение", i].Value.ToString());
+                        id_start_days.Add(dataGridView1["Начало", i + 1].Value.ToString());
+                        stanok_list.Add(dataGridView1["Оборудование", i + 1].Value.ToString());
+                        //    }
+                        //}
+                    }
+                    else
+                    {
+                        smena_end = day_end;
+                        dataGridView1.Rows[i].DefaultCellStyle.BackColor = Color.Green;
+                        id_end_days.Add(dataGridView1["Завершение", i].Value.ToString());
+                        id_start_days.Add(dataGridView1["Начало", i + 1].Value.ToString());
+                        stanok_list.Add(dataGridView1["Оборудование", i].Value.ToString());
+                    }
+                }
+
             }
 
-                
-                    //{ 
-                    //    if (!row.Cells["День"].Value.ToString().Contains(dataGridView1["Начало", i].Value.ToString().Substring(0, 10)))
-                    //    {
-                    //        dr_repod["День"] = dataGridView1["Начало", i].Value.ToString().Substring(0, 10);
-                            
-                    //    }
-                    //try
-                    //{
-                    //    dt_repod.Rows.Add(dr_repod);
-                    //}
-                    //catch { }
 
-                    //}
-                //}
 
-               
-                
-            //}
+            id_end_days.Add(dataGridView1["Завершение", dataGridView1.Rows.Count - 1].Value.ToString());
+
+            System.Data.DataTable dt_repod = new System.Data.DataTable();
+            dt_repod.Columns.Add("Оператор");
+            dt_repod.Columns.Add("Станок");
+            dt_repod.Columns.Add("День");
+            // dt_repod.Columns.Add("Смена");
+            dt_repod.Columns.Add("Период", typeof(string));
+            dt_repod.Columns.Add("Длительность смены, ч.", typeof(string));
+            dt_repod.Columns.Add("Машинное время, ч.");
+            dt_repod.Columns.Add("Остановы, ч.");
+            dt_repod.Columns.Add("Пауза, ч.");
+            dt_repod.Columns.Add("КПД, %");
+
+            for (int i = 0; i < id_end_days.Count; i++)
+            {
+                if (Convert.ToDateTime(id_end_days[i]) > Convert.ToDateTime(id_start_days[i]))
+                {
+                    //MessageBox.Show(id_start_days[i].ToString() + " - " + id_end_days[i].ToString());
+                    dataGridView4.ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableAlwaysIncludeHeaderText;
+                    DataRow dr_repod = dt_repod.NewRow();
+                    dr_repod["Оператор"] = operst;
+                    dr_repod["Станок"] = stanok_list[i].ToString();
+                    dr_repod["День"] = id_start_days[i].ToString().Substring(0, 10);
+                    // dr_repod["Смена"] ="0";
+                    dr_repod["Период"] = id_start_days[i].ToString() + " - " + id_end_days[i].ToString();
+                    dr_repod["Длительность смены, ч."] = Convert.ToDateTime(id_end_days[i].ToString()) - Convert.ToDateTime(id_start_days[i].ToString());
+                    dt_repod.Rows.Add(dr_repod);
+                }
+            }
+
             dataGridView4.DataSource = dt_repod;
+
+            for (int i = 0; i < dataGridView4.Rows.Count; i++)
+            {
+                List<double> pause_ar = new List<double>();
+                List<double> ostanov_ar = new List<double>();
+                List<double> mash_ar = new List<double>();
+                double itog, pause_s, ostanov_s, mash_time;
+                string ostanov_b_h, ostanov_b_m, ostanov_b_s, pause_b_h, pause_b_m, pause_b_s, mash_s, mash_m, mash_h;
+                pause_s = 0;
+                ostanov_s = 0;
+                mash_time = 0;
+                for (int t = 0; t < dataGridView1.Rows.Count; t++)
+                {
+
+                    if ((dataGridView4["Станок", i].Value.ToString() == dataGridView1["Оборудование", t].Value.ToString()) && (Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(0, 19)) <= Convert.ToDateTime(dataGridView1["Начало", t].Value.ToString())) && (Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(22, 19)) >= Convert.ToDateTime(dataGridView1["Завершение", t].Value.ToString())))
+                    {
+                        //???
+
+                        ostanov_b_h = dataGridView1[7, t].Value.ToString().Substring(0, 2);
+                        ostanov_b_m = dataGridView1[7, t].Value.ToString().Substring(3, 2);
+                        ostanov_b_s = dataGridView1[7, t].Value.ToString().Substring(6, 2);
+                        ostanov_s = Convert.ToInt32(ostanov_b_s);
+                        ostanov_s = ostanov_s + (Convert.ToInt32(ostanov_b_m) * 60);
+                        ostanov_s = ostanov_s + (Convert.ToInt32(ostanov_b_h) * 3600);
+                        
+                        if (Convert.ToInt32(ostanov_b_h) >= 1)
+                        {
+                            dataGridView1["Остановы, ч.", t].Style.ForeColor = Color.Red;
+                            dataGridView1["Остановы, ч.", t].Style.BackColor = Color.Black;
+                        }
+                        if (dataGridView1[8, t].Value.ToString().Length > 0)
+                        {
+
+                            pause_b_h = dataGridView1[8, t].Value.ToString().Substring(0, 2);
+                            if (pause_b_h.ToString().Contains(":"))
+                            {
+                                pause_b_h = dataGridView1[8, t].Value.ToString().Substring(0, 1);
+                            }
+                       
+                                    pause_b_m = dataGridView1["Пауза, ч.", t].Value.ToString().Substring(3, 2);
+                                    pause_b_s = dataGridView1["Пауза, ч.", t].Value.ToString().Substring(6, 2);
+                            // pause_s = 0;
+                            if (!pause_b_s.Contains('-'))
+                            {
+                                if (Convert.ToInt16(dataGridView1["Пауза, ч.", t].Value.ToString().Substring(0, 2)) <= 24)
+                                {
+                                    try
+                                    {
+                                        if (TimeSpan.Parse(dataGridView1["Пауза, ч.", t].Value.ToString()) < TimeSpan.Parse("5:00:00"))// && ()
+                                        {
+                                            pause_s = Convert.ToInt64(pause_b_s);
+                                            pause_s = pause_s + (Convert.ToInt64(pause_b_m) * 60);
+                                            pause_s = pause_s + (Convert.ToInt64(pause_b_h) * 3600);
+                                        }
+                                        if (Convert.ToInt32(pause_b_h) >= 1)
+                                        {
+                                            dataGridView1["Пауза, ч.", t].Style.ForeColor = Color.Red;
+                                            dataGridView1["Пауза, ч.", t].Style.BackColor = Color.Black;
+                                        }
+                                    }
+                                    catch {  }
+                                }
+                            }
+                        }
+                        mash_h = dataGridView1["Машинное время, ч.", t].Value.ToString().Substring(0, 2);
+                        mash_m = dataGridView1["Машинное время, ч.", t].Value.ToString().Substring(3, 2);
+                        mash_s = dataGridView1["Машинное время, ч.", t].Value.ToString().Substring(6, 2);
+                        mash_time = Convert.ToInt32(mash_s);
+                        mash_time = mash_time + (Convert.ToInt32(mash_m) * 60);
+                        mash_time = mash_time + (Convert.ToInt32(mash_h) * 3600);
+
+
+
+                        ostanov_ar.Add(ostanov_s);
+                        pause_ar.Add(pause_s);
+                        mash_ar.Add(mash_time);
+
+                    }
+                   
+                }
+
+                    //ostanov_s = 0;
+                    pause_s = 0;
+                    //mash_time = 0;
+
+                double parametr_1 = TimeSpan.Parse("5:00:00").TotalSeconds;
+                for (int y = 0; y < pause_ar.Count(); y++)
+                {
+                    if (pause_ar[y] < parametr_1)
+                    {
+                        pause_s += Convert.ToInt32(pause_ar[y]);
+                    }
+                    
+                    if (ostanov_ar[y] < parametr_1)
+                    {
+                        ostanov_s += Convert.ToInt32(ostanov_ar[y]);
+                    }
+
+                    //ostanov_s += Convert.ToInt32(ostanov_ar[y]);
+                    //pause_s += Convert.ToInt32(pause_ar[y]);
+                    mash_time += Convert.ToInt32(mash_ar[y]);
+                    listBox3.Items.Add(pause_ar[y].ToString());
+                    //MessageBox.Show(pause_ar[y].ToString());
+                }
+
+                try
+                {
+                    //if ()
+                    double osbl = Convert.ToDouble(ostanov_s) - Convert.ToDouble(ostanov_ar[ostanov_ar.LastIndexOf(ostanov_ar.Last())]);
+                    double pausel= Convert.ToDouble(pause_s) - Convert.ToDouble(pause_ar[pause_ar.LastIndexOf(pause_ar.Last())]);
+                    dataGridView4["Остановы, ч.", i].Value = Math.Round(osbl/3600,2);
+                    
+                    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Должно быть нормированное время на уборку того или иного станка.
+                    if (((dataGridView4["Станок", i].Value.ToString().Contains("12T17")) || (dataGridView4["Станок", i].Value.ToString().Contains("78Т16")) || (dataGridView4["Станок", i].Value.ToString().Contains("78Т13")) || (dataGridView4["Станок", i].Value.ToString().Contains("78Т14")) || (dataGridView4["Станок", i].Value.ToString().Contains("74Т15"))) && pause_s > 3600)
+                    {
+                        pausel = pausel - 3600;
+                    }
+                    // ------------------------------------------------------------------------------------------------------------------------------------
+                    
+                    dataGridView4["Пауза, ч.", i].Value = Convert.ToString(Math.Round(Convert.ToDouble(pausel) / 3600, 2));
+                    
+                    double mash_time_up, mash_time_down;
+                    mash_time_up = Convert.ToDouble(Convert.ToDouble(mash_time) - mash_ar[mash_ar.LastIndexOf(mash_ar.Last())]);
+
+                    dataGridView4["Оператор", i].Value = comboBox2.Text;
+                    dataGridView4["Машинное время, ч.", i].Value = Math.Round(Convert.ToDouble(mash_time_up) / 3600, 2);
+                    mash_time_down = Convert.ToDouble(dataGridView4["Машинное время, ч.", i].Value) + Convert.ToDouble(dataGridView4["Остановы, ч.", i].Value) + Convert.ToDouble(dataGridView4["Пауза, ч.", i].Value);
+
+                    dataGridView4["КПД, %", i].Value = Math.Round(Convert.ToDouble(Convert.ToDouble(mash_time_up) / (TimeSpan.Parse(dataGridView4["Длительность смены, ч.", i].Value.ToString()).TotalSeconds)) * 100, 2);//(Convert.ToDouble(osbl + pausel + mash_time_up))) * 100, 2);
+
+                    if (Convert.ToDouble(dataGridView4["КПД, %", i].Value) <= 50)
+                    {
+                        dataGridView4["КПД, %", i].Style.ForeColor = Color.Red;
+
+                    }
+                    else { dataGridView4["КПД, %", i].Style.ForeColor = Color.LimeGreen; }
+                   
+                    // MessageBox.Show(mash_time_up.ToString() + " - " + osbl.ToString() + " - " + pause_s.ToString());
+                }
+                catch { }
+               
+            }
+            dataGridView4.Sort(dataGridView4.Columns["Период"], ListSortDirection.Ascending);
         }
 
-        private void comboras(string combo, DataGridView data, TextBox outp1, TextBox outp2, TextBox outp3, TextBox outp4, Label min, Label max, Label on, Label off)
+        private void comboras(string combo, DataGridView data, System.Windows.Forms.TextBox outp1, System.Windows.Forms.TextBox outp2, System.Windows.Forms.TextBox outp3, System.Windows.Forms.TextBox outp4, System.Windows.Forms.Label min, System.Windows.Forms.Label max, System.Windows.Forms.Label on, System.Windows.Forms.Label off)
         {
             int polez_s, all;
             double itog, pause_s, ostanov_s;
@@ -511,7 +753,7 @@ namespace WindowsFormsApp1
             outp4.Text = Convert.ToString(itog);
             ostanov_ar = new double[dataGridView1.RowCount];
             pause_ar = new double[dataGridView1.RowCount];
-            outp1.Text = Convert.ToString(Math.Round(Convert.ToDouble(polez_s) / 60, 2));
+            outp1.Text = Convert.ToString(Math.Round(Convert.ToDouble(polez_s) / 3600, 2));
             for (int j = 0; j < dataGridView1.Rows.Count; j++)
             {
                 ostanov_b_h = dataGridView1[7, j].Value.ToString().Substring(0, 2);
@@ -525,9 +767,14 @@ namespace WindowsFormsApp1
                     pause_b_h = dataGridView1[8, j].Value.ToString().Substring(0, 2);
                     pause_b_m = dataGridView1[8, j].Value.ToString().Substring(3, 2);
                     pause_b_s = dataGridView1[8, j].Value.ToString().Substring(6, 2);
-                    pause_s = Convert.ToInt32(pause_b_s);
-                    pause_s = pause_s + (Convert.ToInt32(pause_b_m) * 60);
-                    pause_s = pause_s + (Convert.ToInt32(pause_b_h) * 3600);
+                    pause_s = 0;
+                    if (!pause_b_s.Contains('-'))
+                    {
+                        pause_s = Convert.ToInt32(pause_b_s);
+                        pause_s = pause_s + (Convert.ToInt32(pause_b_m) * 60);
+                        pause_s = pause_s + (Convert.ToInt32(pause_b_h) * 3600);
+                    }
+
                 }
                 ostanov_ar[j] = ostanov_s;
                 pause_ar[j] = pause_s;
@@ -537,10 +784,12 @@ namespace WindowsFormsApp1
                 ostanov_s += Convert.ToInt32(ostanov_ar[y]);
                 pause_s += Convert.ToInt32(pause_ar[y]);
             }
-            outp2.Text = Convert.ToString(Math.Round(Convert.ToDouble(ostanov_s) / 60, 2));
-            outp3.Text = Convert.ToString(Math.Round(Convert.ToDouble(pause_s) / 60, 2));
+            //MessageBox.Show(ostanov_s.ToString());
+            //MessageBox.Show(pause_s.ToString());
+            outp2.Text = Convert.ToString(Math.Round(Convert.ToDouble(ostanov_s) / 3600, 2));
+            outp3.Text = Convert.ToString(Math.Round(Convert.ToDouble(pause_s) / 3600, 2));
             stanok = new string[dataGridView1.Rows.Count];
-            DataTable dt1 = new DataTable();
+            System.Data.DataTable dt1 = new System.Data.DataTable();
             DataRow dr1 = dt1.NewRow();
             data.Columns.Add("Станок", "Станок");
             if (загрузкаОператоровToolStripMenuItem.Checked == true)
@@ -570,9 +819,14 @@ namespace WindowsFormsApp1
                         a += Convert.ToInt32(dataGridView1["Числитель, с.", t].Value);
                     }
                     ind = a / all_e * 100;
+
                     data["Коэф.", n].Value = Math.Round(ind, 2);
                 }
+                // MessageBox.Show(a.ToString());
+                // MessageBox.Show(all_e.ToString());
+
             }
+            // MessageBox.Show(listBox1.Items.Count.ToString());
             var minValue_1 = Convert.ToDateTime("11.11.2011 00:00:00"); var maxValue_1 = Convert.ToDateTime("11.11.2011 00:00:00");
             try
             {
@@ -586,31 +840,32 @@ namespace WindowsFormsApp1
                 max.Text = maxValue.ToString();
                 minValue_1 = minValue; maxValue_1 = maxValue;
             }
-            catch { MessageBox.Show("Обнаружены некорректные значения даты.");}
-            double on1=0, off1 =0;
-            
+            catch { MessageBox.Show("Обнаружены некорректные значения даты."); }
+            double on1 = 0, off1 = 0;
+
             //var maxValue = dateTimes.Max();
             //max.Text=maxValue.ToString();
-            try { 
-            for (int k = 0; k < dataGridView5.Rows.Count; k++)
+            try
             {
-                for (int y = 0; y < data.Rows.Count; y++)
+                for (int k = 0; k < dataGridView5.Rows.Count; k++)
                 {
-                    if ((combo == dataGridView5[0, k].Value.ToString()) && (data[0,y].Value.ToString() == dataGridView5["Статус", k].Value.ToString()))
+                    for (int y = 0; y < data.Rows.Count; y++)
                     {
-                        //on.Text = dataGridView5[2,k].Value.ToString();
-                        data[1, y].Value = dataGridView5[2, k].Value.ToString();
-                        //off.Text = dataGridView5[3, k].Value.ToString();
-                        data[2, y].Value = dataGridView5[3, k].Value.ToString();
-                        //MessageBox.Show(Convert.ToString(data[1, y].Value) + Convert.ToString(data[2, y].Value));
-                        MessageBox.Show(data[1, y].Value.ToString());
-                        on1 += Double.Parse(data[1, y].Value.ToString(), CultureInfo.InvariantCulture)*60;
-                        off1 += Double.Parse(data[2, y].Value.ToString(), CultureInfo.InvariantCulture)*60;
+                        if ((combo == dataGridView5[0, k].Value.ToString()) && (data[0, y].Value.ToString() == dataGridView5["Статус", k].Value.ToString()))
+                        {
+                            //on.Text = dataGridView5[2,k].Value.ToString();
+                            data[1, y].Value = dataGridView5[2, k].Value.ToString();
+                            //off.Text = dataGridView5[3, k].Value.ToString();
+                            data[2, y].Value = dataGridView5[3, k].Value.ToString();
+                            //MessageBox.Show(Convert.ToString(data[1, y].Value) + Convert.ToString(data[2, y].Value));
+                            // MessageBox.Show(data[1, y].Value.ToString());
+                            on1 += Double.Parse(data[1, y].Value.ToString(), CultureInfo.InvariantCulture) * 60;
+                            off1 += Double.Parse(data[2, y].Value.ToString(), CultureInfo.InvariantCulture) * 60;
+                        }
                     }
                 }
-            }
-            on.Text = on1.ToString();
-            off.Text = off1.ToString();
+                on.Text = on1.ToString();
+                off.Text = off1.ToString();
                 if (времяВСостоянииToolStripMenuItem.Checked == true)
                 {
                     try
@@ -641,7 +896,7 @@ namespace WindowsFormsApp1
                         bs_d5.Filter = f.ToString();
                         //MessageBox.Show(bs_d5.Filter.ToString());
                         dataGridView5.DataSource = bs_d5;
-                        dataGridView5.Sort(dataGridView1.Columns["Станок"], ListSortDirection.Ascending);
+                        dataGridView5.Sort(dataGridView5.Columns["Станок"], ListSortDirection.Ascending);
                         //}
                         //catch { }
                     }
@@ -649,9 +904,12 @@ namespace WindowsFormsApp1
                 }
             }
             catch { }
-           
+            
 
         }
+
+
+
 
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -665,16 +923,1790 @@ namespace WindowsFormsApp1
             dataGridView2.Columns.Clear();
             //dataGridView5.DataSource = TS;
             comboras(comboBox1.Text, dataGridView2, textBox1, textBox2, textBox3, textBox6, label17, label18, label22, label23);
+            //comboBox1.Sorted = true;
+            //comboBox1.Sorted = true;
+            //comboBox2.Sorted = true;
+            
         }
 
         private void comboBox2_SelectedIndexChanged(object sender, EventArgs e)
         {
-            dataGridView3.Rows.Clear();
-            dataGridView3.Columns.Clear();
-            //dataGridView5.DataSource = TS;
-            comboras(comboBox2.Text,dataGridView3,textBox12,textBox11,textBox10,textBox7, label20, label19,label25,label27);
-            repoday();
+            listBox3.Items.Clear();
+            listBox4.Items.Clear();
+            listBox5.Items.Clear();
+            listBox6.Items.Clear();
+            repoday(comboBox2.Text);
+            double seconds = 0, sec = 0;
+            double col = 0;
+            List<DateTime> l_day = new List<DateTime>();
+            List<DateTime> l_day_beg = new List<DateTime>();
+            List<DateTime> l_day_end = new List<DateTime>();
+            List<DateTime> cringe1 = new List<DateTime>();
+            List<DateTime> cringe2 = new List<DateTime>();
+            List<DateTime> unikend_ar = new List<DateTime>();
+            List<DateTime> unikbeg_ar = new List<DateTime>();
+            List<DateTime> smena1beg_ar = new List<DateTime>();
+            List<DateTime> smena1end_ar = new List<DateTime>();
+            List<DateTime> smena2beg_ar = new List<DateTime>();
+            List<DateTime> smena2end_ar = new List<DateTime>();
+            List<DateTime> smena3beg_ar = new List<DateTime>();
+            List<DateTime> smena3end_ar = new List<DateTime>();
+
+            List<string> ishod = new List<string>();
+            bool haveis = false;
+
+            dataGridView6.Rows.Clear();
+            listBox5.Items.Clear();
+
+            List<int> l_kolvo = new List<int>();
+
+            // СОЗДАЁМ МАССИВ ДНЕЙ
+            l_day.Add(Convert.ToDateTime(dataGridView4["День", 0].Value.ToString()).Date);
+            for (int i = 0; i < dataGridView4.Rows.Count; i++)
+            {
+                bool day_is = false;
+                l_day_beg.Add(Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(0, 19)));
+                l_day_end.Add(Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(22, 19)));
+                for (int y = 0; y < l_day.Count; y++)
+                {
+                    if (l_day[y] == Convert.ToDateTime(dataGridView4["День", i].Value.ToString()).Date)
+                    {
+                        day_is = true;
+                    }
+                }
+                if (day_is == false)
+                {
+                    l_day.Add(Convert.ToDateTime(dataGridView4["День", i].Value.ToString()));
+                }
+            }
+            // МАССИВ ДНЕЙ ЗАПОЛНЕН
+
+            // РАБОТА
+            for (int day_ind = 0; day_ind < l_day.Count; day_ind++)
+            {
+                //int cnt = 0;
+                List<DateTime> iday_ar = new List<DateTime>();
+                List<DateTime> idayend_ar = new List<DateTime>();
+
+
+                // ЗАПОЛНЯЕМ МАССИВ НАЧАЛЬНЫХ ДАТ
+                for (int beg_ind = 0; beg_ind < l_day_beg.Count; beg_ind++)
+                {
+                    if ((l_day[day_ind].Day == l_day_beg[beg_ind].Day) && (l_day[day_ind].Month == l_day_beg[beg_ind].Month) && (l_day[day_ind].Year == l_day_beg[beg_ind].Year))
+                    {
+                        //cnt++;
+                        iday_ar.Add(l_day_beg[beg_ind]);
+                        idayend_ar.Add(l_day_end[beg_ind]);
+                    }
+                    //
+                }
+                // МАССИВ ЗАПОЛНЕН
+
+                // ОПРЕДЕЛЕНИЕ ЗНАЧЕНИЙ НАЧАЛА СМЕН
+                DateTime beg_min = iday_ar[0];
+                DateTime fuckingday = iday_ar[0].Date;
+                DateTime beg_max = iday_ar[0];
+                for (int y = 0; y < iday_ar.Count; y++)
+                {
+                    DateTime base_date = iday_ar[y].Date;
+                    //(beg_min > iday_ar[y]) && 
+                    if ((iday_ar[y] - base_date >= TimeSpan.Parse("0:00:00")) && (iday_ar[y] - base_date <= TimeSpan.Parse("14:30:00")) && (idayend_ar[y] - base_date <= TimeSpan.Parse("3.23:00:00")))
+                    {
+                        smena1beg_ar.Add(iday_ar[y]);
+                        smena1end_ar.Add(idayend_ar[y]);
+
+                    }
+
+                    if ((iday_ar[y] - base_date >= TimeSpan.Parse("14:30:00")) && (iday_ar[y] - base_date <= TimeSpan.Parse("23:30:00")) && (idayend_ar[y] - base_date <= TimeSpan.Parse("3.23:50:00")))
+                    {
+                        smena2beg_ar.Add(iday_ar[y]);
+                        smena2end_ar.Add(idayend_ar[y]);
+                    }
+
+                    //if ((iday_ar[y] - base_date >= TimeSpan.Parse("23:30:00")) && (iday_ar[y] - base_date <= TimeSpan.Parse("1.06:30:00")) && (idayend_ar[y] - base_date <= TimeSpan.Parse("3.23:00:00")))
+                    //{
+                    //    smena3beg_ar.Add(iday_ar[y]);
+                    //    smena3end_ar.Add(idayend_ar[y]);
+                    //}
+                }
+
+                for (int y = 0; y < iday_ar.Count; y++)
+                {
+                    DateTime base_date = iday_ar[y].Date;
+                    if ((iday_ar[y] - base_date >= TimeSpan.Parse("7:00:00")) && (idayend_ar[y] - base_date <= TimeSpan.Parse("15:30:00")))// && (idayend_ar[y] - base_date <= TimeSpan.Parse("3.23:00:00")))
+                    {
+                        smena1beg_ar.Add(iday_ar[y]);
+                        smena1end_ar.Add(idayend_ar[y]);
+                    }
+
+                    if ((iday_ar[y] - base_date >= TimeSpan.Parse("15:30:00")) && (idayend_ar[y] - base_date <= TimeSpan.Parse("23:59:59")))// && (idayend_ar[y] - base_date <= TimeSpan.Parse("3.23:50:00")))
+                    {
+                        smena2beg_ar.Add(iday_ar[y]);
+                        smena2end_ar.Add(idayend_ar[y]);
+                    }
+
+                    if ((iday_ar[y] - base_date >= TimeSpan.Parse("0:00:00")) && (idayend_ar[y] - base_date <= TimeSpan.Parse("07:00:00")))// && (idayend_ar[y] - base_date <= TimeSpan.Parse("3.23:00:00")))
+                    {
+                        smena3beg_ar.Add(iday_ar[y]);
+                        smena3end_ar.Add(idayend_ar[y]);
+                    }
+                }
+
+                // Допиливаем Смены
+
+                for (int i = 0; i < dataGridView4.Rows.Count; i++)
+                {
+
+                    DateTime dt_day_b = Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Split('-')[0]);
+                    DateTime dt_day_e = Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Split('-')[1]);
+
+                    formsmen(dt_day_e, dt_day_b, smena1beg_ar, smena2beg_ar, smena3beg_ar, smena1end_ar, smena2end_ar, smena3end_ar);
+
+                    if (dt_day_b - dt_day_b.Date > TimeSpan.Parse("0:00:00") && dt_day_b - dt_day_b.Date < TimeSpan.Parse("7:00:00") && dt_day_e - dt_day_b.Date > TimeSpan.Parse("7:00:00"))
+                    {
+
+                        DateTime new_end = dt_day_b.Date + TimeSpan.Parse("7:00:00");
+                        if (!smena3beg_ar.Contains(dt_day_b))
+                        {
+                            if (dt_day_e - dt_day_b.Date < TimeSpan.Parse("15:30:00"))
+                            {
+                                smena3beg_ar.Add(dt_day_b);
+                                smena3end_ar.Add(new_end);
+                            }
+                            if (dt_day_e - dt_day_b.Date < TimeSpan.Parse("15:30:00"))
+                            {
+                                smena2beg_ar.Add(new_end);
+                                smena2end_ar.Add(dt_day_e);
+                            }
+                            if (dt_day_e - dt_day_b.Date < TimeSpan.Parse("1.00:00:00"))
+                            {
+                                smena1beg_ar.Add(new_end);
+                                smena1end_ar.Add(Convert.ToDateTime("15:30:00"));
+                                smena2beg_ar.Add(new_end);
+                                smena2end_ar.Add(Convert.ToDateTime("15:30:00"));
+                            }
+
+                        }
+
+
+                        if (dt_day_e - dt_day_b.Date > TimeSpan.Parse("7:00:00") && dt_day_e - dt_day_b.Date < TimeSpan.Parse("15:30:00"))
+                        {
+                            DateTime new_end_1 = dt_day_b.Date + TimeSpan.Parse("15:30:00");
+                            DateTime new_beg_1 = dt_day_b.Date + TimeSpan.Parse("07:00:00");
+                            smena1beg_ar.Add(new_beg_1);
+                            smena1end_ar.Add(new_end_1);
+                        }
+
+                        if (dt_day_e - dt_day_b.Date > TimeSpan.Parse("15:30:00") && dt_day_e - dt_day_b.Date < TimeSpan.Parse("23:59:59"))
+                        {
+                            DateTime new_end_1 = dt_day_b.Date + TimeSpan.Parse("23:59:59");
+                            DateTime new_beg_1 = dt_day_b.Date + TimeSpan.Parse("15:30:00");
+                            smena2beg_ar.Add(new_beg_1);
+                            smena2end_ar.Add(new_end_1);
+                        }
+                    }
+               // }
+
+                if (dt_day_b - dt_day_b.Date > TimeSpan.Parse("15:30:00") && dt_day_b - dt_day_b.Date < TimeSpan.Parse("23:59:59") && dt_day_e - dt_day_b.Date > TimeSpan.Parse("23:59:59"))
+                {
+                    DateTime new_end = dt_day_b.Date + TimeSpan.Parse("23:59:59");
+                    smena2beg_ar.Add(dt_day_b);
+                    smena2end_ar.Add(new_end);
+
+                    if (dt_day_e - dt_day_b.Date > TimeSpan.Parse("23:59:59") && dt_day_e - dt_day_b.Date < TimeSpan.Parse("1.07:00:00"))
+                    {
+                        DateTime new_end_1 = dt_day_b.Date + TimeSpan.Parse("1.07:00:00");
+                        DateTime new_beg_1 = dt_day_b.Date + TimeSpan.Parse("1.00:00:00");
+                        smena3beg_ar.Add(new_beg_1);
+                        smena3end_ar.Add(new_end_1);
+                    }
+
+                    if (dt_day_e - dt_day_b.Date > TimeSpan.Parse("1.07:00:00") && dt_day_e - dt_day_b.Date < TimeSpan.Parse("1.15:30:00"))
+                    {
+                        DateTime new_end_1 = dt_day_b.Date + TimeSpan.Parse("1.15:30:00");
+                        DateTime new_beg_1 = dt_day_b.Date + TimeSpan.Parse("1.07:00:00");
+                        smena1beg_ar.Add(new_beg_1);
+                        smena1end_ar.Add(new_end_1);
+                    }
+                }
+
+                if (dt_day_b - dt_day_b.Date > TimeSpan.Parse("7:00:00") && dt_day_b - dt_day_b.Date < TimeSpan.Parse("15:30:00") && dt_day_e - dt_day_b.Date > TimeSpan.Parse("15:30:00"))
+                {
+                    DateTime new_end = dt_day_b.Date + TimeSpan.Parse("15:30:00");
+                    smena1beg_ar.Add(dt_day_b);
+                    smena1end_ar.Add(new_end);
+
+                    if (dt_day_e - dt_day_b.Date > TimeSpan.Parse("15:30:00") && dt_day_e - dt_day_b.Date < TimeSpan.Parse("23:59:59"))
+                    {
+                        DateTime new_end_1 = dt_day_b.Date + TimeSpan.Parse("23:59:59");
+                        DateTime new_beg_1 = dt_day_b.Date + TimeSpan.Parse("15:30:00");
+                        smena2beg_ar.Add(new_beg_1);
+                        smena2end_ar.Add(new_end_1);
+                    }
+
+                    if (dt_day_e - dt_day_b.Date > TimeSpan.Parse("23:59:59") && dt_day_e - dt_day_b.Date < TimeSpan.Parse("1.07:00:00"))
+                    {
+                        DateTime new_end_1 = dt_day_b.Date + TimeSpan.Parse("1.07:00:00");
+                        DateTime new_beg_1 = dt_day_b.Date + TimeSpan.Parse("1.00:00:00");
+                        smena3beg_ar.Add(new_beg_1);
+                        smena3end_ar.Add(new_end_1);
+                    }
+                }
+
+
+            }
         }
+
+            for (int i = 0; i < dataGridView4.Rows.Count; i++)
+            {
+
+                DateTime dt_day_b = Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Split('-')[0]);
+                DateTime dt_day_e = Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Split('-')[1]);
+
+                formsmen(dt_day_e, dt_day_b, smena1beg_ar, smena2beg_ar, smena3beg_ar, smena1end_ar, smena2end_ar, smena3end_ar);
+            }
+
+            for (int i = 0; i < smena1beg_ar.Count; i++)
+            {
+                for (int j = 0; j < smena2beg_ar.Count; j++)
+                {
+                    if ((smena1beg_ar[i].Date == smena2beg_ar[j].Date) && (smena2beg_ar[j] - smena1beg_ar[i] < TimeSpan.Parse("3:00:00")) && (smena1end_ar[i] > smena2end_ar[j]))
+                    {
+                        smena2beg_ar[j] = smena1beg_ar[i];
+                        smena1beg_ar.Remove(smena1beg_ar[i]);
+                        smena1end_ar.Remove(smena1end_ar[i]);
+                    }
+                }
+            }
+
+            for (int u = 0; u < smena3beg_ar.Count; u++)
+            {
+                listBox6.Items.Add(smena3beg_ar[u].ToString() + " - " + smena3end_ar[u].ToString());
+            }
+
+
+            //List<string> fuck = new List<string>();
+            List<DateTime> list_begday = new List<DateTime>();
+            List<DateTime> list_endday = new List<DateTime>();
+            List<DateTime> list_begday2 = new List<DateTime>();
+            List<DateTime> list_endday2 = new List<DateTime>();
+            List<DateTime> list_begday3 = new List<DateTime>();
+            List<DateTime> list_endday3 = new List<DateTime>();
+            List<DateTime> c1 = new List<DateTime>();
+            List<DateTime> c2 = new List<DateTime>();
+
+            List<DateTime> c1_2 = new List<DateTime>();
+            List<DateTime> c2_2 = new List<DateTime>();
+
+            List<DateTime> cccb1 = new List<DateTime>();
+            List<DateTime> ccce1 = new List<DateTime>();
+            List<DateTime> cccb2 = new List<DateTime>();
+            List<DateTime> ccce2 = new List<DateTime>();
+
+
+            List<DateTime> indeces_b = new List<DateTime>();
+            List<DateTime> indeces_e = new List<DateTime>();
+
+            List<DateTime> indeces_b2 = new List<DateTime>();
+            List<DateTime> indeces_e2 = new List<DateTime>();
+
+
+
+            List<int> cccol = new List<int>();
+
+            List<DateTime> b1 = smena1beg_ar.ToList();
+            List<DateTime> b2 = smena2beg_ar.ToList();
+            List<DateTime> e1 = smena1end_ar.ToList();
+            List<DateTime> e2 = smena2end_ar.ToList();
+
+
+            for (int day = 0; day < l_day.Count; day++)
+            {
+                DateTime beg_max = DateTime.MinValue;
+                DateTime beg_min = DateTime.MaxValue;
+                DateTime beg_max2 = DateTime.MinValue;
+                DateTime beg_min2 = DateTime.MaxValue;
+                DateTime beg_max3 = DateTime.MinValue;
+                DateTime beg_min3 = DateTime.MaxValue;
+
+                // ОТЧАЯНИЕ
+                DateTime A2beg_max = DateTime.MaxValue;
+                DateTime A2beg_min = DateTime.MinValue;
+                DateTime A2beg_max2 = DateTime.MaxValue;
+                DateTime A2beg_min2 = DateTime.MinValue;
+                DateTime A2beg_max3 = DateTime.MaxValue;
+                DateTime A2beg_min3 = DateTime.MinValue;
+
+
+                DateTime A2beg_max_2 = DateTime.MaxValue;
+                DateTime A2beg_min_2 = DateTime.MinValue;
+                DateTime A2beg_max2_2 = DateTime.MaxValue;
+                DateTime A2beg_min2_2 = DateTime.MinValue;
+                DateTime A2beg_max3_2 = DateTime.MaxValue;
+                DateTime A2beg_min3_2 = DateTime.MinValue;
+
+                int kolvo_st = 0;
+                int day_ogr = 0;
+
+                for (int i = 0; i < smena1beg_ar.Count; i++)
+                {
+                    if (l_day[day].Date == smena1beg_ar[i].Date)
+                    {
+                        kolvo_st++;
+                        day_ogr = i;
+
+                        if (beg_min > smena1beg_ar[i])
+                        {
+                            beg_min = smena1beg_ar[i];
+                        }
+
+                        if (beg_max < smena1end_ar[i])
+                        {
+                            beg_max = smena1end_ar[i];
+                        }
+                    }
+                }
+
+                for (int i = 0; i < smena2beg_ar.Count; i++)
+                {
+                    if (l_day[day].Date == smena2beg_ar[i].Date)
+                    {
+                        kolvo_st++;
+                        if (beg_min2 > smena2beg_ar[i])
+                        {
+                            beg_min2 = smena2beg_ar[i];
+                        }
+
+                        if (beg_max2 < smena2end_ar[i])
+                        {
+                            beg_max2 = smena2end_ar[i];
+                        }
+                    }
+                }
+
+
+                for (int i = 0; i < b1.Count; i++)
+                {
+
+                    if (l_day[day].Date == b1[i].Date)
+                    {
+                        if (A2beg_min < b1[i])
+                        {
+                            if (indeces_b.Contains(b1[i]) == false)
+                            {
+                                A2beg_min = b1[i];
+                                indeces_b.Add(b1[i]);
+                            }
+                            else
+                            {
+                                A2beg_min = b1[i];
+                            }
+                        }
+                    }
+
+
+                    if (l_day[day].Date == b1[i].Date)
+                    {
+
+                        if (A2beg_max > e1[i])
+                        {
+                            if (indeces_b.Contains(e1[i]) == false)
+                            {
+                                A2beg_max = e1[i];
+                                indeces_e.Add(e1[i]);
+                            }
+                            else
+                            {
+                                A2beg_max = e1[i];
+                            }
+
+                            // b1.Remove(A2beg_min);
+                            // e1.Remove(A2beg_max);
+                        }
+                    }
+
+                }
+                for (int i = 0; i < b2.Count; i++)
+                {
+
+                    if (l_day[day].Date == b2[i].Date)
+                    {
+                        if (A2beg_min2 < b2[i])
+                        {
+                            if (indeces_b2.Contains(b2[i]) == false)
+                            {
+                                A2beg_min2 = b2[i];
+                                indeces_b2.Add(b2[i]);
+                            }
+                            else
+                            {
+                                A2beg_min2 = b2[i];
+                            }
+                        }
+                    }
+
+
+                    if (l_day[day].Date == b2[i].Date)
+                    {
+                        if (A2beg_max2 > e2[i])
+                        {
+                            if (indeces_b2.Contains(e2[i]) == false)
+                            {
+                                A2beg_max2 = e2[i];
+                                indeces_e2.Add(e2[i]);
+                            }
+                            else
+                            {
+                                A2beg_max2 = e2[i];
+                            }
+                            // b2.Remove(A2beg_min);
+                            // e2.Remove(A2beg_max);
+                        }
+
+                    }
+                }
+
+
+                if (beg_min.Date == l_day[day].Date)
+                {
+
+                    list_begday.Add(beg_min);
+                    list_endday.Add(beg_max);
+                    c1.Add(A2beg_max);
+                    c2.Add(A2beg_min);
+                    cccol.Add(kolvo_st);
+                }
+
+                if (beg_min2.Date == l_day[day].Date)
+                {
+                    list_begday2.Add(beg_min2);
+                    list_endday2.Add(beg_max2);
+                    c1.Add(A2beg_max2);
+                    c2.Add(A2beg_min2);
+                    cccol.Add(kolvo_st);
+                }
+
+
+
+            }
+            var alltime_beg = c2.OrderBy(s => s);
+            var alltime_end = c1.OrderBy(s => s);
+
+            List<DateTime> s1_b = new List<DateTime>();
+            List<DateTime> s1_e = new List<DateTime>();
+            List<DateTime> s1_ef1 = new List<DateTime>();
+            List<DateTime> s2_b = new List<DateTime>();
+            List<DateTime> s2_e = new List<DateTime>();
+            List<DateTime> s2_ef1 = new List<DateTime>();
+            List<int> s1_count = new List<int>();
+            List<int> s2_count = new List<int>();
+
+
+
+
+            //for (int cstanki=6; cstanki>0; cstanki--)
+            //{
+            for (int day = 0; day < l_day.Count; day++)
+            {
+                List<DateTime> stanok1_b = new List<DateTime>();
+                List<DateTime> stanok1_e = new List<DateTime>();
+                List<DateTime> stanok2_b = new List<DateTime>();
+                List<DateTime> stanok2_e = new List<DateTime>();
+                List<DateTime> stanok1_ef1 = new List<DateTime>();
+                List<int> stc_e = new List<int>();
+                List<int> stc_e_2 = new List<int>();
+
+                DateTime st1_beg = DateTime.MinValue;
+                DateTime st1_end = DateTime.MaxValue;
+                DateTime st2_beg = DateTime.MinValue;
+                DateTime st2_end = DateTime.MaxValue;
+
+                int kolvo_st = 0;
+                int kolvo_st_2 = 0;
+
+                for (int row = 0; row < smena1beg_ar.Count; row++)
+                {
+                    //if (!stanok1_b.Contains(Convert.ToDateTime(dataGridView4["Период", row].Value.ToString().Substring(0, 19))))
+                    //{
+                    DateTime dg_row_b = smena1beg_ar[row];
+                    DateTime dg_row_e = smena1end_ar[row];
+                    //switch (cstanki)
+                    //{
+                    //    case 6:
+                    if (l_day[day].Date == dg_row_b.Date)
+                    {
+
+                        kolvo_st++;
+
+                        stanok1_b.Add(dg_row_b);
+                        stanok1_e.Add(dg_row_e);
+                        stc_e.Add(kolvo_st);
+                    }
+
+                }
+                for (int row = 0; row < smena2beg_ar.Count; row++)
+                {
+                    //if (!stanok1_b.Contains(Convert.ToDateTime(dataGridView4["Период", row].Value.ToString().Substring(0, 19))))
+                    //{
+                    DateTime dg_row_b2 = smena2beg_ar[row];
+                    DateTime dg_row_e2 = smena2end_ar[row];
+                    //switch (cstanki)
+                    //{
+                    //    case 6:
+                    if (l_day[day].Date == dg_row_b2.Date)
+                    {
+
+                        kolvo_st_2++;
+
+                        stanok2_b.Add(dg_row_b2);
+                        stanok2_e.Add(dg_row_e2);
+                        stc_e_2.Add(kolvo_st_2);
+                    }
+
+                }
+
+                var sort_st_b = stanok1_b.OrderBy(s => s);
+                var sort_st_e = stanok1_e.OrderByDescending(s => s);
+                var sort_st_b2 = stanok2_b.OrderBy(s => s);
+                var sort_st_e2 = stanok2_e.OrderByDescending(s => s);
+
+
+
+                s1_b.AddRange(sort_st_b);
+                s1_e.AddRange(sort_st_e);
+                s1_count.AddRange(stc_e);
+                s2_b.AddRange(sort_st_b2);
+                s2_e.AddRange(sort_st_e2);
+                s2_count.AddRange(stc_e_2);
+
+            }
+            //}
+            var albegtime = s1_b.Concat(s2_b).OrderBy(s => s);
+            var alendtime = s1_e.Concat(s2_e).OrderBy(s => s);
+            // var alendtime = s1_e.Concat(s2_e).OrderByDescending(s=>s);
+
+            List<DateTime> ABT = albegtime.ToList();
+            List<DateTime> AET = alendtime.ToList();
+            List<int> AC = new List<int>();
+
+            int kol = 0;
+
+            List<string> part_1 = new List<string>();
+            try
+            {
+                //for (int d=0; d < l_day.Count; d++)
+                //{
+                for (int row = 0; row < s1_b.Count - 1; row++)
+                {
+                    if (s1_count[row] == 1 && s1_b[row].Date == s1_b[row + 1].Date)
+                    {
+                        part_1.Add(s1_b[row].ToString() + " - " + s1_b[row + 1].ToString() + " - " + s1_count[row].ToString());
+                    }
+                    else if (s1_b[row].Date != s1_b[row + 1].Date)// && row < s1_b.Count-2)
+                    {
+                        part_1.Add(s1_b[row].ToString() + " - " + s1_e[row].ToString() + " - " + s1_count[row].ToString());
+                    }
+
+                }
+                part_1.Add(s1_b[s1_b.Count - 1].ToString() + " - " + s1_e[s1_b.Count - 1].ToString() + " - " + s1_count[s1_b.Count - 1].ToString());
+
+                for (int row = 0; row < s2_b.Count - 1; row++)
+                {
+                    if (s2_count[row] == 1 && s2_b[row + 1].Date == s2_b[row].Date)
+                    {
+                        part_1.Add(s2_b[row].ToString() + " - " + s2_b[row + 1].ToString() + " - " + s2_count[row].ToString());
+                    }
+                    else if (s2_b[row + 1].Date != s2_b[row].Date)
+                    {
+                        part_1.Add(s2_b[row].ToString() + " - " + s2_e[row].ToString() + " - " + s2_count[row].ToString());
+                        //part_1.Add(s2_b[s2_b.Count].ToString() + " - " + s2_e[s2_b.Count].ToString() + " - " + s2_count[s2_b.Count].ToString());
+                    }
+                    //part_1.Add(s2_b[i].ToString() + " - " + s2_b[i + 1].ToString() + " - " + s2_count[i].ToString())
+                }
+                part_1.Add(s2_b[s2_b.Count - 1].ToString() + " - " + s2_e[s2_b.Count - 1].ToString() + " - " + s2_count[s2_b.Count - 1].ToString());
+            }
+            catch { }
+            part_1.Sort();
+
+            //for (int d = 0; d < l_day.Count; d++)
+            //{
+            //    TimeSpan t1 = TimeSpan.Zero, t2 = TimeSpan.Zero, t3 = TimeSpan.Zero, t4 = TimeSpan.Zero, t5 = TimeSpan.Zero, t6 = TimeSpan.Zero;
+            //    int ks;
+
+            //    for (int i = 0; i < part_1.Count; i++)
+            //    {
+            //        if (l_day[d].Date == Convert.ToDateTime(part_1[i].Split('-')[0]).Date)
+            //        {
+            //            ks = Convert.ToInt16(part_1[i].Split('-')[2]);
+            //            switch (ks)
+            //            {
+            //                case 1:
+            //                    t1 += Convert.ToDateTime(part_1[i].Split('-')[1]) - Convert.ToDateTime(part_1[i].Split('-')[0]);
+            //                    break;
+
+            //                case 2:
+            //                    t2 += Convert.ToDateTime(part_1[i].Split('-')[1]) - Convert.ToDateTime(part_1[i].Split('-')[0]);
+            //                    break;
+
+            //                case 3:
+            //                    t3 += Convert.ToDateTime(part_1[i].Split('-')[1]) - Convert.ToDateTime(part_1[i].Split('-')[0]);
+            //                    break;
+
+            //                case 4:
+            //                    t4 += Convert.ToDateTime(part_1[i].Split('-')[1]) - Convert.ToDateTime(part_1[i].Split('-')[0]);
+            //                    break;
+
+            //                case 5:
+            //                    t5 += Convert.ToDateTime(part_1[i].Split('-')[1]) - Convert.ToDateTime(part_1[i].Split('-')[0]);
+            //                    break;
+
+            //                case 6:
+            //                    t6 += Convert.ToDateTime(part_1[i].Split('-')[1]) - Convert.ToDateTime(part_1[i].Split('-')[0]);
+            //                    break;
+            //            }
+            //        }
+
+
+            //    }
+            //    string y1, y2, y3, y4, y5, y6;
+            //    string s1 = "", s2 = "", s3 = "", s4 = "", s5 = "", s6 = "";
+            //    int i_h;
+
+            //    //for (int i = 0; i < part_1.Count; i++)
+            //    //{
+            //    //    MessageBox.Show(part_1[i].ToString());
+            //    //}
+            //        for (int i = 0; i < part_1.Count; i++)
+            //        {
+            //            if (l_day[d].Date == Convert.ToDateTime(part_1[i].Split('-')[0]).Date)
+            //            {
+            //                if (t1.Days >= 0)
+            //                {
+            //                    y1 = t1.ToString().Split(':')[1] + ':' + t1.ToString().Split(':')[2];
+            //                    i_h = t1.Days * 24 + t1.Hours;
+            //                    s1 = i_h.ToString() + ':' + y1;
+            //                }
+            //                else { t1 = TimeSpan.Zero; s1 = ""; }
+            //                if (t2.Days >= 0)
+            //                {
+            //                    y2 = t2.ToString().Split(':')[1] + ':' + t2.ToString().Split(':')[2];
+            //                    i_h = t2.Days * 24 + t2.Hours;
+            //                    s2 = i_h.ToString() + ':' + y2;
+            //                }
+            //                else { t2 = TimeSpan.Zero; s2 = ""; }
+            //                if (t3.Days >= 0)
+            //                {
+            //                    y3 = t3.ToString().Split(':')[1] + ':' + t3.ToString().Split(':')[2];
+            //                    i_h = t3.Days * 24 + t3.Hours;
+            //                    s3 = i_h.ToString() + ':' + y3;
+            //                }
+            //                else { t3 = TimeSpan.Zero; s3 = ""; }
+            //                if (t4.Days >= 0)
+            //                {
+            //                    y4 = t4.ToString().Split(':')[1] + ':' + t4.ToString().Split(':')[2];
+            //                    i_h = t4.Days * 24 + t4.Hours;
+            //                    s4 = i_h.ToString() + ':' + y4;
+            //                }
+            //                else { t4 = TimeSpan.Zero; s4 = ""; }
+            //                if (t5.Days >= 0)
+            //                {
+            //                    y5 = t5.ToString().Split(':')[1] + ':' + t5.ToString().Split(':')[2];
+            //                    i_h = t5.Days * 24 + t5.Hours;
+            //                    s5 = i_h.ToString() + ':' + y5;
+            //                }
+            //                else { t5 = TimeSpan.Zero; s5 = ""; }
+            //                if (t6.Days >= 0)
+            //                {
+            //                    y6 = t6.ToString().Split(':')[1] + ':' + t6.ToString().Split(':')[2];
+            //                    i_h = t6.Days * 24 + t6.Hours;
+            //                    s6 = i_h.ToString() + ':' + y6;
+            //                }
+            //                else { t6 = TimeSpan.Zero; s6 = ""; }
+
+
+
+            //            }
+            //        }
+            //        //}     
+            //        //break;
+
+            //    dataGridView6.Rows.Insert(d, l_day[d].Date, s1.ToString(), s2.ToString(), s3.ToString(), s4.ToString(), s5.ToString(), s6.ToString());
+            //}
+
+
+
+            //for (int i = 0; i < part_1.Count; i++)
+            //{
+            //    listBox5.Items.Add(Convert.ToString(Convert.ToDateTime(part_1[i].Split('-')[1]) - Convert.ToDateTime(part_1[i].Split('-')[0])) + part_1[i].Split('-')[2].ToString());
+            //}
+
+
+            //for (int day = 0; day < l_day.Count; day++)
+            //{
+            //    int kolvo_st = 0;
+
+            //    // мНОГОСТАНОЧНОСТЬ
+            //    List<int> c_d = new List<int>();
+            //    List<DateTime> d_d = new List<DateTime>();
+            //    int count_st = 0;
+            //    d_d.Add(Convert.ToDateTime(dataGridView4["День", 0].Value.ToString()));
+            //    for (int k = 0; k < dataGridView4.Rows.Count - 1; k++)
+            //    {
+            //        count_st++;
+            //        if (dataGridView4["День", k + 1].Value.ToString() != dataGridView4["День", k].Value.ToString())
+            //        {
+            //            d_d.Add(Convert.ToDateTime(dataGridView4["День", k + 1].Value.ToString()));
+            //            c_d.Add(count_st);
+            //            count_st = 0;
+            //        }
+
+
+
+            //    }
+
+
+
+            //    for (int i = 0; i < list_begday.Count; i++)
+            //    {
+            //        listBox3.Items.Add(list_begday[i].ToString() + " - " + list_endday[i].ToString());
+            //    }
+
+            //    for (int i = 0; i < list_begday2.Count; i++)
+            //    {
+            //        listBox4.Items.Add(list_begday2[i].ToString() + " - " + list_endday2[i].ToString());
+            //    }
+
+            //    List<DateTime> begin_date = alltime_beg.ToList();
+            //    List<DateTime> end_date = alltime_end.ToList();
+
+
+            //    // МНОГОСТАНОЧНОСТЬ
+            //    int kol_stanki = 0;
+            //    DateTime time_1 = DateTime.MinValue;
+            //    List<string> b_1 = new List<string>();
+            //    List<DateTime> b_2 = new List<DateTime>();
+
+            //}
+
+
+            foreach (string lines in listBox5.Items)
+            {
+                ishod.Add(lines);
+            }
+
+            List<string> list = new List<string>();
+
+        }
+
+
+        private void formsmen(DateTime dk, DateTime dn, List<DateTime> sm1, List<DateTime> sm2, List<DateTime> sm3, List<DateTime> sm1_e, List<DateTime> sm2_e, List<DateTime> sm3_e)
+        {
+            if (dn < dn.Date + TimeSpan.Parse("7:00:00") && dn > dn.Date)
+            {
+                if (dk > dn.Date + TimeSpan.Parse("7:00:00") && dk < dn.Date + TimeSpan.Parse("15:30:00"))
+                {
+                    if (!sm3.Contains(dn) && !sm3_e.Contains(dk))
+                    {
+                        sm1.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                        sm1_e.Add(dk);
+                        sm3.Add(dn);
+                        sm3_e.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                    }
+
+                }
+                else if (dk > dn.Date + TimeSpan.Parse("15:30:00") && dk < dn.Date + TimeSpan.Parse("23:59:59"))
+                {
+                    if (!sm3.Contains(dn) && !sm3_e.Contains(dk))
+                    {
+                        sm2.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                        sm2_e.Add(dk);
+                        sm3.Add(dn);
+                        sm3_e.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                        sm1.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                        sm1_e.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                    }
+
+                }
+                else if (dk > dn.Date + TimeSpan.Parse("23:59:59") && dk < dn.Date + TimeSpan.Parse("1.07:00:00"))
+                {
+                    string s = Convert.ToString(dn.Date + TimeSpan.Parse("1.00:00:00"));
+
+                    if (!sm3.Contains(dn) && !sm3_e.Contains(dk))
+                    {
+                        // MessageBox.Show(Convert.ToString(s + " - " + dk.ToString()));
+                        sm3.Add(dn);
+                        sm3_e.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                        //sm1.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                        //sm1_e.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                        sm3.Add(dn.Date + TimeSpan.Parse("1.00:00:00"));
+                        sm3_e.Add(dk);
+                        sm2.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                        sm2_e.Add(dn.Date + TimeSpan.Parse("23:59:59"));
+                        sm1.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                        sm1_e.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                    }
+
+
+                }
+            }
+
+            else if (dn < dn.Date + TimeSpan.Parse("15:30:00") && dn > dn.Date + TimeSpan.Parse("7:00:00")) // 1 смена
+            {
+                if (dk > dn.Date + TimeSpan.Parse("15:30:00") && dk < dn.Date + TimeSpan.Parse("23:59:59"))
+                {
+                    if (!sm3.Contains(dn) && !sm3_e.Contains(dk))
+                    {
+                        sm1.Add(dn);
+                        sm1_e.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                        sm2.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                        sm2_e.Add(dk);
+
+                    }
+
+                }
+
+                if (dk > dn.Date + TimeSpan.Parse("1.00:00:00") && dk < dn.Date + TimeSpan.Parse("1.07:00:00"))
+                {
+                    if (!sm3.Contains(dn) && !sm3_e.Contains(dk))
+                    {
+                        sm1.Add(dn);
+                        sm1_e.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                        sm2.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                        sm2_e.Add(dn.Date + TimeSpan.Parse("23:59:59"));
+                        sm3.Add(dn.Date + TimeSpan.Parse("1.00:00:00"));
+                        sm3_e.Add(dk);
+
+                    }
+
+                }
+                //else
+                //{
+                //    string s = Convert.ToString(dn.Date + TimeSpan.Parse("1.00:00:00"));
+
+                //    if (!sm2.Contains(dn))
+                //    {
+                //        // MessageBox.Show(Convert.ToString(s + " - " + dk.ToString()));
+                //        sm3.Add(dn);
+                //        sm3_e.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                //        //sm1.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                //        //sm1_e.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                //        sm3.Add(dn.Date + TimeSpan.Parse("1.00:00:00"));
+                //        sm3_e.Add(dk);
+                //        sm2.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                //        sm2_e.Add(dn.Date + TimeSpan.Parse("23:59:59"));
+                //        sm1.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                //        sm1_e.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                //    }
+                //}
+            }
+            else if (dn < dn.Date + TimeSpan.Parse("23:59:59") && dn > dn.Date + TimeSpan.Parse("15:30:00")) // 1 смена
+            {
+                if (dk > dn.Date + TimeSpan.Parse("1.00:00:00") && dk < dn.Date + TimeSpan.Parse("1.07:00:00"))
+                {
+                    if (!sm3.Contains(dn) && !sm3_e.Contains(dk))
+                    {
+                        //sm1.Add(dn);
+                        //sm1_e.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                        sm2.Add(dn);
+                        sm2_e.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                        sm3.Add(dn.Date + TimeSpan.Parse("1.00:00:00"));
+                        sm3_e.Add(dk);
+                    }
+
+                }
+
+                //if (dk > dn.Date + TimeSpan.Parse("1.00:00:00") && dk < dn.Date + TimeSpan.Parse("1.07:00:00"))
+                //{
+                //    if (!sm3.Contains(dn) && !sm3_e.Contains(dk))
+                //    {
+                //        sm1.Add(dn);
+                //        sm1_e.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                //        sm2.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                //        sm2_e.Add(dn.Date + TimeSpan.Parse("23:59:59"));
+                //        sm3.Add(dn.Date);
+                //        sm3_e.Add(dk);
+
+                //    }
+
+                //}
+                //else
+                //{
+                //    string s = Convert.ToString(dn.Date + TimeSpan.Parse("1.00:00:00"));
+
+                //    if (!sm2.Contains(dn))
+                //    {
+                //        // MessageBox.Show(Convert.ToString(s + " - " + dk.ToString()));
+                //        sm3.Add(dn);
+                //        sm3_e.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                //        //sm1.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                //        //sm1_e.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                //        sm3.Add(dn.Date + TimeSpan.Parse("1.00:00:00"));
+                //        sm3_e.Add(dk);
+                //        sm2.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                //        sm2_e.Add(dn.Date + TimeSpan.Parse("23:59:59"));
+                //        sm1.Add(dn.Date + TimeSpan.Parse("7:00:00"));
+                //        sm1_e.Add(dn.Date + TimeSpan.Parse("15:30:00"));
+                //    }
+                //}
+            }
+        }
+
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern int GetWindowThreadProcessId(IntPtr hWnd, out int lpdwProcessId);
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            progressBar1.Value = 0;
+            label30.Text = progressBar1.Value.ToString();
+            DateTime beg_day, end_day;
+            List<DateTime> begday_ar = new List<DateTime>();
+            List<DateTime> endday_ar = new List<DateTime>();
+            List<TimeSpan> ar_smen = new List<TimeSpan>();
+            List<double> autoriz_sec = new List<double>();
+            string[,] ar_day_time;
+            List<TimeSpan> ar_hope = new List<TimeSpan>();
+            TimeSpan oper_smen = TimeSpan.Parse("00:00:00");
+            end_day = Convert.ToDateTime("11.11.2077");
+                Excel.Application app = null;
+                Excel.Workbook workbook = null;
+                Excel.Worksheet worksheet = null;
+                //Excel.Range workSheet_range = null;
+                app = new Excel.Application();
+                app.SheetsInNewWorkbook = 1;//обязательно до создания новой книги
+                workbook = app.Workbooks.Add(1);
+                worksheet = workbook.Sheets[1];
+                worksheet.Name = "Отчёт";
+            
+            if (radioButton9.Checked == true)
+            {
+                worksheet.Cells[1, 1].Value = "Оператор";
+                worksheet.Cells[1, 2].Value = "Станок";
+                worksheet.Cells[1, 3].Value = "День";
+                worksheet.Cells[1, 4].Value = "Период";
+                worksheet.Cells[1, 5].Value = "Длительность смены";
+                worksheet.Cells[1, 6].Value = "Машинное время, ч.";
+                worksheet.Cells[1, 7].Value = "Остановы, ч.";
+                worksheet.Cells[1, 8].Value = "Пауза, ч.";
+                worksheet.Cells[1, 9].Value = "КПД, %";
+                worksheet.Cells[1, 10].Value = "Итог";
+                
+                var shapk = worksheet.get_Range("A1", "J1").Cells.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+                //worksheet.get_Range("A1", "J1").AutoFilter();
+
+                // worksheet.get_Range("A1", "J1").Cells.VerticalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+                worksheet.get_Range("A1", "J1").Cells.Font.Size = 14;
+                
+                worksheet.get_Range("A1", "J1").Cells.Font.Bold = true;
+                int k = 2;
+
+                foreach (string opert in comboBox2.Items)
+                {
+                    progressBar1.Value += (100/comboBox2.Items.Count);
+                    label30.Text = progressBar1.Value.ToString();
+                    int all = 0;
+                    comboBox2.Text = opert;
+                    repoday(opert);
+                    beg_day = DateTime.MaxValue;
+                    end_day = DateTime.MinValue;
+                    double seconds = 0, sec = 0;
+                    double col = 0;
+                    ar_day_time = new string[2, dataGridView4.Rows.Count];
+
+                    List<DateTime> l_day = new List<DateTime>();
+                    List<DateTime> l_day_beg = new List<DateTime>();
+                    List<DateTime> l_day_end = new List<DateTime>();
+                    List<DateTime> cringe1 = new List<DateTime>();
+                    List<DateTime> cringe2 = new List<DateTime>();
+                    List<DateTime> unikend_ar = new List<DateTime>();
+                    List<DateTime> unikbeg_ar = new List<DateTime>();
+                    List<DateTime> smena1beg_ar = new List<DateTime>();
+                    List<DateTime> smena1end_ar = new List<DateTime>();
+                    List<DateTime> smena2beg_ar = new List<DateTime>();
+                    List<DateTime> smena2end_ar = new List<DateTime>();
+                    List<DateTime> smena3beg_ar = new List<DateTime>();
+                    List<DateTime> smena3end_ar = new List<DateTime>();
+
+
+                    List<int> l_kolvo = new List<int>();
+
+                    // СОЗДАЁМ МАССИВ ДНЕЙ
+                    l_day.Add(Convert.ToDateTime(dataGridView4["День", 0].Value.ToString()).Date);
+                    for (int i = 0; i < dataGridView4.Rows.Count; i++)
+                    {
+                        bool day_is = false;
+                        l_day_beg.Add(Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(0, 19)));
+                        l_day_end.Add(Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(22, 19)));
+                        for (int y = 0; y < l_day.Count; y++)
+                        {
+                            if (l_day[y] == Convert.ToDateTime(dataGridView4["День", i].Value.ToString()).Date)
+                            {
+                                day_is = true;
+                            }
+                        }
+                        if (day_is == false)
+                        {
+                            l_day.Add(Convert.ToDateTime(dataGridView4["День", i].Value.ToString()));
+                        }
+                    }
+                    // МАССИВ ДНЕЙ ЗАПОЛНЕН
+
+                    // РАБОТА
+                    for (int day_ind = 0; day_ind < l_day.Count; day_ind++)
+                    {
+                        //int cnt = 0;
+                        List<DateTime> iday_ar = new List<DateTime>();
+                        List<DateTime> idayend_ar = new List<DateTime>();
+
+
+                        // ЗАПОЛНЯЕМ МАССИВ НАЧАЛЬНЫХ ДАТ
+                        for (int beg_ind = 0; beg_ind < l_day_beg.Count; beg_ind++)
+                        {
+                            if ((l_day[day_ind].Day == l_day_beg[beg_ind].Day) && (l_day[day_ind].Month == l_day_beg[beg_ind].Month) && (l_day[day_ind].Year == l_day_beg[beg_ind].Year))
+                            {
+                                //cnt++;
+                                iday_ar.Add(l_day_beg[beg_ind]);
+                                idayend_ar.Add(l_day_end[beg_ind]);
+                            }
+                            //
+                        }
+                        // МАССИВ ЗАПОЛНЕН
+
+                        // ОПРЕДЕЛЕНИЕ ЗНАЧЕНИЙ НАЧАЛА СМЕН
+                        DateTime beg_min = iday_ar[0];
+                        DateTime fuckingday = iday_ar[0].Date;
+                        DateTime beg_max = iday_ar[0];
+                        for (int y = 0; y < iday_ar.Count; y++)
+                        {
+                            DateTime base_date = iday_ar[y].Date;
+                            //(beg_min > iday_ar[y]) && 
+                            if ((iday_ar[y] - base_date >= TimeSpan.Parse("0:00:00")) && (iday_ar[y] - base_date <= TimeSpan.Parse("14:30:00")) && (idayend_ar[y] - base_date <= TimeSpan.Parse("3.23:00:00")))
+                            {
+                                smena1beg_ar.Add(iday_ar[y]);
+                                smena1end_ar.Add(idayend_ar[y]);
+                            }
+
+                            if ((iday_ar[y] - base_date > TimeSpan.Parse("14:30:00")) && (iday_ar[y] - base_date <= TimeSpan.Parse("23:30:00")) && (idayend_ar[y] - base_date <= TimeSpan.Parse("3.23:50:00")))
+                            {
+                                smena2beg_ar.Add(iday_ar[y]);
+                                smena2end_ar.Add(idayend_ar[y]);
+                            }
+
+                        }
+                    }
+
+                    for (int i = 0; i < smena1beg_ar.Count; i++)
+                    {
+                        for (int j = 0; j < smena2beg_ar.Count; j++)
+                        {
+                            try
+                            {
+                                if ((smena1beg_ar[i].Date == smena2beg_ar[j].Date) && (smena2beg_ar[j] - smena1beg_ar[i] < TimeSpan.Parse("3:00:00")) && (smena1end_ar[i] > smena2end_ar[j]))
+                                {
+                                    smena2beg_ar[j] = smena1beg_ar[i];
+                                    smena1beg_ar.Remove(smena1beg_ar[i]);
+                                    smena1end_ar.Remove(smena1end_ar[i]);
+                                }
+                            }
+                            catch { }
+                            
+                        }
+                    }
+
+                    List<DateTime> list_begday = new List<DateTime>();
+                    List<DateTime> list_endday = new List<DateTime>();
+                    List<DateTime> list_begday2 = new List<DateTime>();
+                    List<DateTime> list_endday2 = new List<DateTime>();
+                    List<DateTime> list_begday3 = new List<DateTime>();
+                    List<DateTime> list_endday3 = new List<DateTime>();
+
+                    for (int day = 0; day < l_day.Count; day++)
+                    {
+                        DateTime beg_max = DateTime.MinValue;
+                        DateTime beg_min = DateTime.MaxValue;
+                        DateTime beg_max2 = DateTime.MinValue;
+                        DateTime beg_min2 = DateTime.MaxValue;
+                        DateTime beg_max3 = DateTime.MinValue;
+                        DateTime beg_min3 = DateTime.MaxValue;
+                        DateTime sbeg1 = DateTime.MinValue;
+                        DateTime send1 = DateTime.MaxValue;
+
+                        for (int i = 0; i < smena1beg_ar.Count; i++)
+                        {
+                            if (l_day[day].Date == smena1beg_ar[i].Date)
+                            {
+                                if (beg_min > smena1beg_ar[i])
+                                {
+                                    beg_min = smena1beg_ar[i];
+                                }
+
+                                if (beg_max < smena1end_ar[i])
+                                {
+                                    beg_max = smena1end_ar[i];
+                                }
+
+                                if (sbeg1 < smena1beg_ar[i])
+                                {
+                                    sbeg1 = smena1beg_ar[i];
+                                }
+                            }
+                        }
+
+                        for (int i = 0; i < smena2beg_ar.Count; i++)
+                        {
+                            if (l_day[day].Date == smena2beg_ar[i].Date)
+                            {
+                                if (beg_min2 > smena2beg_ar[i])
+                                {
+                                    beg_min2 = smena2beg_ar[i];
+                                }
+
+                                if (beg_max2 < smena2end_ar[i])
+                                {
+                                    beg_max2 = smena2end_ar[i];
+                                }
+                            }
+                        }
+
+                        for (int i = 0; i < smena3beg_ar.Count; i++)
+                        {
+                            if (l_day[day].Date == smena3beg_ar[i].Date)
+                            {
+                                if (beg_min3 > smena3beg_ar[i])
+                                {
+                                    beg_min3 = smena3beg_ar[i];
+                                }
+
+                                if (beg_max3 < smena3end_ar[i])
+                                {
+                                    beg_max3 = smena3end_ar[i];
+                                }
+                            }
+                        }
+
+                        if (beg_min.Date == l_day[day].Date)
+                        {
+                            list_begday.Add(beg_min);
+                            list_endday.Add(beg_max);
+                        }
+
+                        if (beg_min2.Date == l_day[day].Date)
+                        {
+                            list_begday2.Add(beg_min2);
+                            list_endday2.Add(beg_max2);
+                        }
+
+                        if (beg_min3.Date == l_day[day].Date)
+                        {
+                            list_begday3.Add(beg_min3);
+                            list_endday3.Add(beg_max3);
+                        }
+                    }
+
+
+                    TimeSpan smenatime = TimeSpan.Parse("00:00:00");
+
+                    for (int i = 0; i < list_begday.Count; i++)
+                    {
+                        smenatime += list_endday[i] - list_begday[i];
+                        // MessageBox.Show(cringe1[i].ToString() + " - " + cringe2[i].ToString());// + " - " + l_day_end[i].ToString());
+                    }
+
+                    for (int i = 0; i < list_begday2.Count; i++)
+                    {
+                        smenatime += list_endday2[i] - list_begday2[i];
+                        //MessageBox.Show(unikbeg_ar[i].ToString() + " - " + unikend_ar[i].ToString());// + " - " + l_day_end[i].ToString());
+                    }
+
+                    for (int i = 0; i < list_begday3.Count; i++)
+                    {
+                        smenatime += list_endday3[i] - list_begday3[i];
+                        //MessageBox.Show(unikbeg_ar[i].ToString() + " - " + unikend_ar[i].ToString());// + " - " + l_day_end[i].ToString());
+                    }
+
+
+                    ar_smen.Add(smenatime);
+
+
+                    //for (int u = 0; u < list_begday.Count; u++)
+                    //{
+
+
+
+                    //}
+
+
+                    for (int i = 0; i < dataGridView4.Rows.Count; i++)
+                    {
+
+                        all++;
+                        worksheet.Cells[i + k, 1].Value = opert;
+                        worksheet.Cells[i + k, 2].Value = dataGridView4[1, i].Value.ToString();
+                        worksheet.Cells[i + k, 3].Value = Convert.ToDateTime(dataGridView4[2, i].Value.ToString());
+                        worksheet.Cells[i + k, 4].Value = dataGridView4[3, i].Value.ToString();
+                        worksheet.Cells[i + k, 5].Value = dataGridView4[4, i].Value.ToString();
+                        worksheet.Cells[i + k, 6].Value = Convert.ToDouble(dataGridView4[5, i].Value.ToString());
+                        worksheet.Cells[i + k, 7].Value = Convert.ToDouble(dataGridView4[6, i].Value.ToString());
+                        worksheet.Cells[i + k, 8].Value = Convert.ToDouble(dataGridView4[7, i].Value.ToString());
+                        worksheet.Cells[i + k, 9].Value = Convert.ToDouble(dataGridView4[8, i].Value.ToString());
+                        worksheet.Cells[i + k, 9].Font.Color = Color.Red;
+                        if (worksheet.Cells[i + k, 9].Value >= Convert.ToDouble(50))
+                        {
+                            worksheet.Cells[i + k, 9].Font.Color = Color.Green;
+                        }
+                        if (beg_day > Convert.ToDateTime(dataGridView4[2, i].Value))
+                        {
+                            beg_day = Convert.ToDateTime(dataGridView4[2, i].Value);
+                        }
+                        if (end_day < Convert.ToDateTime(dataGridView4[2, i].Value))
+                        {
+                            end_day = Convert.ToDateTime(dataGridView4[2, i].Value);
+                        }
+
+                    }
+                    k += dataGridView4.Rows.Count + 1;
+                    begday_ar.Add(Convert.ToDateTime(beg_day.ToString()));
+                    endday_ar.Add(Convert.ToDateTime(end_day.ToString()));
+
+
+
+                }
+
+                List<int> bid = new List<int>();
+                List<int> eid = new List<int>();
+                List<int> emptyxls_id = new List<int>();
+                // List<int> begday = new List<int>();
+                bid.Add(2);
+                // int begin_range=1;
+                for (int i = 2; i < k; i++)
+                {
+                    if ((worksheet.Cells[i, 9].Value is null))
+                    {
+                        if ((worksheet.Cells[i + 1, 9].Value != null))
+                        {
+                            bid.Add(i + 1);
+                        }
+
+                        eid.Add(i - 1);
+                        //worksheet.Cells[i, 7].Value = i-begin_range;
+                    }
+                    // else { begin_range++; }
+                    //{
+                    //    worksheet.Cells[i, 9].Value = "SUCK";
+                    //}
+                }
+
+                for (int i = 0; i < bid.Count; i++)
+                {
+
+                    for (int u = 2; u < k; u++)
+                    {
+                        if (worksheet.Cells[u, 9].Value == null)
+                        {
+
+                            double sum = app.WorksheetFunction.Sum(worksheet.get_Range("I" + bid[i], "I" + eid[i]));
+                            double sum_MASH = app.WorksheetFunction.Sum(worksheet.get_Range("F" + bid[i], "F" + eid[i]));
+                            double sum_OST = app.WorksheetFunction.Sum(worksheet.get_Range("G" + bid[i], "G" + eid[i]));
+                            double sum_PAUSE = app.WorksheetFunction.Sum(worksheet.get_Range("H" + bid[i], "H" + eid[i]));
+
+                            //TimeSpan sum_smen = TimeSpan.Parse(app.WorksheetFunction.Sum(worksheet.get_Range("H" + bid[i], "H" + eid[i])));
+                            worksheet.Cells[u, 9].Value = Math.Round((sum_MASH / (sum_MASH + sum_OST + sum_PAUSE)) * 100, 2);
+                            worksheet.Cells[u, 10].Value = "Да";
+                            worksheet.Cells[u, 9].Interior.Color = Color.Red;
+                            worksheet.Cells[u, 9].Font.Color = Color.White;
+                            worksheet.Cells[u, 9].Font.Bold = true;
+                            worksheet.Cells[u, 8].Font.Bold = true;
+                            worksheet.Cells[u, 7].Font.Bold = true;
+                            worksheet.Cells[u, 6].Font.Bold = true;
+                            worksheet.Cells[u, 1].Font.Bold = true;
+                            worksheet.Cells[u, 4].Font.Bold = true;
+                            if (worksheet.Cells[u, 9].Value >= Convert.ToDouble(50)) { worksheet.Cells[u, 9].Interior.Color = Color.Green; }
+                            double prog = app.WorksheetFunction.Average(worksheet.get_Range("F" + bid[i], "F" + eid[i]));
+                            worksheet.Cells[u, 6].Value = Math.Round(prog, 2);// + " - " + Math.Round(sum_MASH, 2);
+                            double ost = app.WorksheetFunction.Average(worksheet.get_Range("G" + bid[i], "G" + eid[i]));
+                            worksheet.Cells[u, 7].Value = Math.Round(ost, 2);// + " - " + Math.Round(sum_OST, 2);
+                            double pause = app.WorksheetFunction.Average(worksheet.get_Range("H" + bid[i], "H" + eid[i]));
+                            worksheet.Cells[u, 8].Value = Math.Round(pause, 2);// + " - " + Math.Round(sum_PAUSE, 2);
+                            worksheet.Cells[u, 1].Value = worksheet.Cells[u - 1, 1].Value;
+                            worksheet.Cells[u, 4].Value = begday_ar[i].ToString().Substring(0, 10) + " - " + endday_ar[i].ToString().Substring(0, 10);
+                            emptyxls_id.Add(u);
+                            //worksheet.Cells[u, 5].Value = ar_smen[];
+
+                            //worksheet.Cells[u + 1, 13].Value = bid[i];
+                            //worksheet.Cells[u + 1, 14].Value = eid[i];
+                            break;
+                        }
+                    }
+
+                }
+                //for (int o = 0; o < ar_smen.Count; o++)
+                //{
+                //    MessageBox.Show(ar_smen[o].ToString());
+
+                //}
+                for (int i = 0; i < emptyxls_id.Count; i++)
+                {
+                    if (ar_smen[i].ToString().Length > 8)
+                    {
+                        string itog = ar_smen[i].ToString();
+                        string days = itog.Split('.')[0];
+                        string hours = itog.Split('.')[1].Split(':')[0];
+                        int int_hours = Convert.ToInt32(Convert.ToInt32(days) * 24) + Convert.ToInt32(hours);
+                        string str_itog = int_hours.ToString() + ':' + itog.Split('.')[1].Split(':')[1] + ':' + itog.Split('.')[1].Split(':')[2];
+                        //MessageBox.Show(emptyxls_id[i].ToString());
+                        worksheet.Cells[emptyxls_id[i], 5].Value = str_itog;
+                    }
+                    else
+                    {
+                        worksheet.Cells[emptyxls_id[i], 5].Value = ar_smen[i].ToString();
+                    }
+
+                }
+
+
+
+
+
+                var cells = worksheet.get_Range("A1", "J" + (k - 1));
+                cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlInsideVertical].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // внутренние вертикальные
+                cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlInsideHorizontal].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // внутренние горизонтальные            
+                cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeTop].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // верхняя внешняя
+                cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeRight].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // правая внешняя
+                cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeLeft].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // левая внешняя
+                cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+                worksheet.get_Range("A2", "J" + (k - 1)).Cells.Font.Size = 13;
+                worksheet.get_Range("I1", "I" + (k - 1)).Cells.Font.Bold = true;
+                cells.Columns.EntireColumn.AutoFit();
+                cells = null;
+
+            }
+            else if (radioButton10.Checked == true)
+            {
+                worksheet.Cells[1, 1].Value = "Оператор";
+                worksheet.Cells[1, 2].Value = "Станок";
+                worksheet.Cells[1, 3].Value = "День";
+                worksheet.Cells[1, 4].Value = "Период";
+                worksheet.Cells[1, 5].Value = "Длительность смены";
+                worksheet.Cells[1, 6].Value = "Машинное время, ч., (среднее-сумма)";
+                worksheet.Cells[1, 7].Value = "Остановы, ч., (среднее-сумма)";
+                worksheet.Cells[1, 8].Value = "Пауза, ч., (среднее-сумма)";
+                worksheet.Cells[1, 9].Value = "КПД, %";
+                worksheet.Cells[1, 10].Value = "Итог";
+                var shapk = worksheet.get_Range("A1", "J1").Cells.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+               // worksheet.get_Range("A1", "J1").Cells.VerticalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+                worksheet.get_Range("A1", "J1").Cells.Font.Size = 14;
+                //worksheet.get_Range("A1", "J1").Cells.Style.WrapText = true;
+                worksheet.get_Range("A1", "J1").Cells.Font.Bold = true;
+               //worksheet.PageSetup.Orientation = Microsoft.Office.Interop.Excel.XlPageOrientation.xlLandscape;
+                int k = 2;
+                // int p = 0;
+                foreach (string opert in comboBox2.Items)
+                {
+                    progressBar1.Value += (100 / comboBox2.Items.Count);
+                    label30.Text = progressBar1.Value.ToString();
+                    int all = 0;
+                    comboBox2.Text = opert;
+                    repoday(opert);
+                    beg_day = Convert.ToDateTime("11.11.2077");
+                    end_day = Convert.ToDateTime("11.11.2011");
+                    double seconds = 0, sec = 0;
+                    double col = 0;
+                    ar_day_time = new string[2, dataGridView4.Rows.Count];
+
+                    List<DateTime> l_day = new List<DateTime>();
+                    List<DateTime> l_day_beg = new List<DateTime>();
+                    List<DateTime> l_day_end = new List<DateTime>();
+                    List<DateTime> cringe1 = new List<DateTime>();
+                    List<DateTime> cringe2 = new List<DateTime>();
+                    List<DateTime> unikend_ar = new List<DateTime>();
+                    List<DateTime> unikbeg_ar = new List<DateTime>();
+                    List<DateTime> smena1beg_ar = new List<DateTime>();
+                    List<DateTime> smena1end_ar = new List<DateTime>();
+                    List<DateTime> smena2beg_ar = new List<DateTime>();
+                    List<DateTime> smena2end_ar = new List<DateTime>();
+                    List<DateTime> smena3beg_ar = new List<DateTime>();
+                    List<DateTime> smena3end_ar = new List<DateTime>();
+
+
+                    List<int> l_kolvo = new List<int>();
+
+                    // СОЗДАЁМ МАССИВ ДНЕЙ
+                    l_day.Add(Convert.ToDateTime(dataGridView4["День", 0].Value.ToString()).Date);
+                    for (int i = 0; i < dataGridView4.Rows.Count; i++)
+                    {
+                        bool day_is = false;
+                        l_day_beg.Add(Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(0, 19)));
+                        l_day_end.Add(Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(22, 19)));
+                        for (int y = 0; y < l_day.Count; y++)
+                        {
+                            if (l_day[y] == Convert.ToDateTime(dataGridView4["День", i].Value.ToString()).Date)
+                            {
+                                day_is = true;
+                            }
+                        }
+                        if (day_is == false)
+                        {
+                            l_day.Add(Convert.ToDateTime(dataGridView4["День", i].Value.ToString()));
+                        }
+                    }
+                    // МАССИВ ДНЕЙ ЗАПОЛНЕН
+
+                    // РАБОТА
+                    for (int day_ind = 0; day_ind < l_day.Count; day_ind++)
+                    {
+                        //int cnt = 0;
+                        List<DateTime> iday_ar = new List<DateTime>();
+                        List<DateTime> idayend_ar = new List<DateTime>();
+
+
+                        // ЗАПОЛНЯЕМ МАССИВ НАЧАЛЬНЫХ ДАТ
+                        for (int beg_ind = 0; beg_ind < l_day_beg.Count; beg_ind++)
+                        {
+                            if ((l_day[day_ind].Day == l_day_beg[beg_ind].Day) && (l_day[day_ind].Month == l_day_beg[beg_ind].Month) && (l_day[day_ind].Year == l_day_beg[beg_ind].Year))
+                            {
+                                //cnt++;
+                                iday_ar.Add(l_day_beg[beg_ind]);
+                                idayend_ar.Add(l_day_end[beg_ind]);
+                            }
+                            //
+                        }
+                        // МАССИВ ЗАПОЛНЕН
+
+                        // ОПРЕДЕЛЕНИЕ ЗНАЧЕНИЙ НАЧАЛА СМЕН
+                        DateTime beg_min = iday_ar[0];
+                        DateTime fuckingday = iday_ar[0].Date;
+                        DateTime beg_max = iday_ar[0];
+                        for (int y = 0; y < iday_ar.Count; y++)
+                        {
+                            DateTime base_date = iday_ar[y].Date;
+                            //(beg_min > iday_ar[y]) && 
+                            if ((iday_ar[y] - base_date >= TimeSpan.Parse("0:00:00")) && (iday_ar[y] - base_date <= TimeSpan.Parse("14:30:00")) && (idayend_ar[y] - base_date <= TimeSpan.Parse("3.23:00:00")))
+                            {
+                                smena1beg_ar.Add(iday_ar[y]);
+                                smena1end_ar.Add(idayend_ar[y]);
+                            }
+
+                            if ((iday_ar[y] - base_date > TimeSpan.Parse("14:30:00")) && (iday_ar[y] - base_date <= TimeSpan.Parse("23:30:00")) && (idayend_ar[y] - base_date <= TimeSpan.Parse("3.23:50:00")))
+                            {
+                                smena2beg_ar.Add(iday_ar[y]);
+                                smena2end_ar.Add(idayend_ar[y]);
+                            }
+
+                        }
+                    }
+
+                    for (int i = 0; i < smena1beg_ar.Count; i++)
+                    {
+                        for (int j = 0; j < smena2beg_ar.Count; j++)
+                        {
+                            if ((smena1beg_ar[i].Date == smena2beg_ar[j].Date) && (smena2beg_ar[j] - smena1beg_ar[i] < TimeSpan.Parse("3:00:00")) && (smena1end_ar[i] > smena2end_ar[j]))
+                            {
+                                smena2beg_ar[j] = smena1beg_ar[i];
+                                smena1beg_ar.Remove(smena1beg_ar[i]);
+                                smena1end_ar.Remove(smena1end_ar[i]);
+                            }
+                        }
+                    }
+
+                    List<DateTime> list_begday = new List<DateTime>();
+                    List<DateTime> list_endday = new List<DateTime>();
+                    List<DateTime> list_begday2 = new List<DateTime>();
+                    List<DateTime> list_endday2 = new List<DateTime>();
+                    List<DateTime> list_begday3 = new List<DateTime>();
+                    List<DateTime> list_endday3 = new List<DateTime>();
+
+                    for (int day = 0; day < l_day.Count; day++)
+                    {
+                        DateTime beg_max = DateTime.MinValue;
+                        DateTime beg_min = DateTime.MaxValue;
+                        DateTime beg_max2 = DateTime.MinValue;
+                        DateTime beg_min2 = DateTime.MaxValue;
+                        DateTime beg_max3 = DateTime.MinValue;
+                        DateTime beg_min3 = DateTime.MaxValue;
+                        DateTime sbeg1 = DateTime.MinValue;
+                        DateTime send1 = DateTime.MaxValue;
+
+                        for (int i = 0; i < smena1beg_ar.Count; i++)
+                        {
+                            if (l_day[day].Date == smena1beg_ar[i].Date)
+                            {
+                                if (beg_min > smena1beg_ar[i])
+                                {
+                                    beg_min = smena1beg_ar[i];
+                                }
+
+                                if (beg_max < smena1end_ar[i])
+                                {
+                                    beg_max = smena1end_ar[i];
+                                }
+
+                                if (sbeg1 < smena1beg_ar[i])
+                                {
+                                    sbeg1 = smena1beg_ar[i];
+                                }
+                            }
+                        }
+
+                        for (int i = 0; i < smena2beg_ar.Count; i++)
+                        {
+                            if (l_day[day].Date == smena2beg_ar[i].Date)
+                            {
+                                if (beg_min2 > smena2beg_ar[i])
+                                {
+                                    beg_min2 = smena2beg_ar[i];
+                                }
+
+                                if (beg_max2 < smena2end_ar[i])
+                                {
+                                    beg_max2 = smena2end_ar[i];
+                                }
+                            }
+                        }
+
+                        for (int i = 0; i < smena3beg_ar.Count; i++)
+                        {
+                            if (l_day[day].Date == smena3beg_ar[i].Date)
+                            {
+                                if (beg_min3 > smena3beg_ar[i])
+                                {
+                                    beg_min3 = smena3beg_ar[i];
+                                }
+
+                                if (beg_max3 < smena3end_ar[i])
+                                {
+                                    beg_max3 = smena3end_ar[i];
+                                }
+                            }
+                        }
+
+                        if (beg_min.Date == l_day[day].Date)
+                        {
+                            list_begday.Add(beg_min);
+                            list_endday.Add(beg_max);
+                        }
+
+                        if (beg_min2.Date == l_day[day].Date)
+                        {
+                            list_begday2.Add(beg_min2);
+                            list_endday2.Add(beg_max2);
+                        }
+
+                        if (beg_min3.Date == l_day[day].Date)
+                        {
+                            list_begday3.Add(beg_min3);
+                            list_endday3.Add(beg_max3);
+                        }
+                    }
+
+
+                    TimeSpan smenatime = TimeSpan.Parse("00:00:00");
+
+                    for (int i = 0; i < list_begday.Count; i++)
+                    {
+                        smenatime += list_endday[i] - list_begday[i];
+                        // MessageBox.Show(cringe1[i].ToString() + " - " + cringe2[i].ToString());// + " - " + l_day_end[i].ToString());
+                    }
+
+                    for (int i = 0; i < list_begday2.Count; i++)
+                    {
+                        smenatime += list_endday2[i] - list_begday2[i];
+                        //MessageBox.Show(unikbeg_ar[i].ToString() + " - " + unikend_ar[i].ToString());// + " - " + l_day_end[i].ToString());
+                    }
+
+                    for (int i = 0; i < list_begday3.Count; i++)
+                    {
+                        smenatime += list_endday3[i] - list_begday3[i];
+                        //MessageBox.Show(unikbeg_ar[i].ToString() + " - " + unikend_ar[i].ToString());// + " - " + l_day_end[i].ToString());
+                    }
+
+
+                    ar_smen.Add(smenatime);
+
+
+                    //for (int u = 0; u < list_begday.Count; u++)
+                    //{
+
+
+
+                    //}
+
+
+                    for (int i = 0; i < dataGridView4.Rows.Count; i++)
+                    {
+
+                        all++;
+                        worksheet.Cells[i + k, 1].Value = opert;
+                        worksheet.Cells[i + k, 2].Value = dataGridView4[1, i].Value.ToString();
+                        worksheet.Cells[i + k, 3].Value = Convert.ToDateTime(dataGridView4[2, i].Value.ToString());
+                        worksheet.Cells[i + k, 4].Value = dataGridView4[3, i].Value.ToString();
+                        worksheet.Cells[i + k, 5].Value = dataGridView4[4, i].Value.ToString();
+                        worksheet.Cells[i + k, 6].Value = Convert.ToDouble(dataGridView4[5, i].Value.ToString());
+                        worksheet.Cells[i + k, 7].Value = Convert.ToDouble(dataGridView4[6, i].Value.ToString());
+                        worksheet.Cells[i + k, 8].Value = Convert.ToDouble(dataGridView4[7, i].Value.ToString());
+                        worksheet.Cells[i + k, 9].Value = Convert.ToDouble(dataGridView4[8, i].Value.ToString());
+                        worksheet.Cells[i + k, 9].Font.Color = Color.Red;
+                        if (worksheet.Cells[i + k, 9].Value >= Convert.ToDouble(50))
+                        {
+                            worksheet.Cells[i + k, 9].Font.Color = Color.Green;
+                        }
+                        if (beg_day > Convert.ToDateTime(dataGridView4[2, i].Value))
+                        {
+                            beg_day = Convert.ToDateTime(dataGridView4[2, i].Value);
+                        }
+                        if (end_day < Convert.ToDateTime(dataGridView4[2, i].Value))
+                        {
+                            end_day = Convert.ToDateTime(dataGridView4[2, i].Value);
+                        }
+
+                    }
+                    k += dataGridView4.Rows.Count + 1;
+                    begday_ar.Add(Convert.ToDateTime(beg_day.ToString()));
+                    endday_ar.Add(Convert.ToDateTime(end_day.ToString()));
+
+
+
+                }
+
+                List<int> bid = new List<int>();
+                List<int> eid = new List<int>();
+                List<int> emptyxls_id = new List<int>();
+                // List<int> begday = new List<int>();
+                bid.Add(2);
+                // int begin_range=1;
+                for (int i = 2; i < k; i++)
+                {
+                    if ((worksheet.Cells[i, 9].Value is null))
+                    {
+                        if ((worksheet.Cells[i + 1, 9].Value != null))
+                        {
+                            bid.Add(i + 1);
+                        }
+
+                        eid.Add(i - 1);
+                        //worksheet.Cells[i, 7].Value = i-begin_range;
+                    }
+                    // else { begin_range++; }
+                    //{
+                    //    worksheet.Cells[i, 9].Value = "SUCK";
+                    //}
+                }
+
+                for (int i = 0; i < bid.Count; i++)
+                {
+
+                    for (int u = 2; u < k; u++)
+                    {
+                        if (worksheet.Cells[u, 9].Value == null)
+                        {
+
+                            double sum = app.WorksheetFunction.Sum(worksheet.get_Range("I" + bid[i], "I" + eid[i]));
+                            double sum_MASH = app.WorksheetFunction.Sum(worksheet.get_Range("F" + bid[i], "F" + eid[i]));
+                            double sum_OST = app.WorksheetFunction.Sum(worksheet.get_Range("G" + bid[i], "G" + eid[i]));
+                            double sum_PAUSE = app.WorksheetFunction.Sum(worksheet.get_Range("H" + bid[i], "H" + eid[i]));
+
+
+
+                            //TimeSpan sum_smen = TimeSpan.Parse(app.WorksheetFunction.Sum(worksheet.get_Range("H" + bid[i], "H" + eid[i])));
+                            worksheet.Cells[u, 9].Value = Math.Round((sum_MASH / (sum_MASH + sum_OST + sum_PAUSE)) * 100, 2);
+                            worksheet.Cells[u, 10].Value = "Да";
+                            worksheet.Cells[u, 9].Interior.Color = Color.Red;
+                            worksheet.Cells[u, 9].Font.Color = Color.White;
+                            worksheet.Cells[u, 9].Font.Bold = true;
+                            worksheet.Cells[u, 8].Font.Bold = true;
+                            worksheet.Cells[u, 7].Font.Bold = true;
+                            worksheet.Cells[u, 6].Font.Bold = true;
+                            worksheet.Cells[u, 1].Font.Bold = true;
+                            worksheet.Cells[u, 4].Font.Bold = true;
+                            if (worksheet.Cells[u, 9].Value >= Convert.ToDouble(50)) { worksheet.Cells[u, 9].Interior.Color = Color.Green; }
+                            double prog = app.WorksheetFunction.Average(worksheet.get_Range("F" + bid[i], "F" + eid[i]));
+                            worksheet.Cells[u, 6].Value = Math.Round(prog, 2) + " - " + Math.Round(sum_MASH, 2);
+                            double ost = app.WorksheetFunction.Average(worksheet.get_Range("G" + bid[i], "G" + eid[i]));
+                            worksheet.Cells[u, 7].Value = Math.Round(ost, 2) + " - " + Math.Round(sum_OST, 2);
+                            double pause = app.WorksheetFunction.Average(worksheet.get_Range("H" + bid[i], "H" + eid[i]));
+                            worksheet.Cells[u, 8].Value = Math.Round(pause, 2) + " - " + Math.Round(sum_PAUSE, 2);
+                            worksheet.Cells[u, 1].Value = worksheet.Cells[u - 1, 1].Value;
+                            worksheet.Cells[u, 4].Value = begday_ar[i].ToString().Substring(0, 10) + " - " + endday_ar[i].ToString().Substring(0, 10);
+                            emptyxls_id.Add(u);
+                            break;
+                        }
+                    }
+
+                }
+
+                for (int i = 0; i < emptyxls_id.Count; i++)
+                {
+                    if (ar_smen[i].ToString().Length > 8)
+                    {
+                        string itog = ar_smen[i].ToString();
+                        string days = itog.Split('.')[0];
+                        string hours = itog.Split('.')[1].Split(':')[0];
+                        int int_hours = Convert.ToInt32(Convert.ToInt32(days) * 24) + Convert.ToInt32(hours);
+                        string str_itog = int_hours.ToString() + ':' + itog.Split('.')[1].Split(':')[1] + ':' + itog.Split('.')[1].Split(':')[2];
+                        //MessageBox.Show(emptyxls_id[i].ToString());
+                        worksheet.Cells[emptyxls_id[i], 5].Value = str_itog;
+                    }
+                    else
+                    {
+                        worksheet.Cells[emptyxls_id[i], 5].Value = ar_smen[i].ToString();
+                    }
+
+                }
+
+                var cells = worksheet.get_Range("A1", "J" + (k - 1));
+                cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlInsideVertical].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // внутренние вертикальные
+                cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlInsideHorizontal].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // внутренние горизонтальные            
+                cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeTop].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // верхняя внешняя
+                cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeRight].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // правая внешняя
+                cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeLeft].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // левая внешняя
+                cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
+                worksheet.get_Range("A2", "J" + (k - 1)).Cells.Font.Size = 13;
+                worksheet.get_Range("I1", "I" + (k - 1)).Cells.Font.Bold = true;
+                cells.Columns.EntireColumn.AutoFit();
+                cells = null;
+            }
+            worksheet.get_Range("A1", "J1").Cells.Style.WrapText = true;
+
+            folderBrowserDialog1.Description = "Выберите директорию для сохранения файла отчёта";
+            string fullfilename2003;
+            Random rnd = new Random();
+            int randomNumber = rnd.Next();
+            fullfilename2003 = "VP_" + randomNumber.ToString() + ".xlsx";
+            if (System.IO.File.Exists(fullfilename2003)) System.IO.File.Delete(fullfilename2003);
+
+            if (folderBrowserDialog1.ShowDialog()== DialogResult.OK)
+            {
+               
+                workbook.SaveAs(folderBrowserDialog1.SelectedPath +@"\"+ fullfilename2003 + ".xlsx", Excel.XlFileFormat.xlWorkbookDefault); //формат Excel 2007+
+
+                workbook.Close(0); //false - закрыть рабочую книгу не сохраняя изменения
+                MessageBox.Show("Файл сохранён под именем \"" + fullfilename2003 + "\" в пути: "+ folderBrowserDialog1.SelectedPath , "Сохранение файла", MessageBoxButtons.OK, MessageBoxIcon.Information);
+               // MessageBox.Show(folderBrowserDialog1.SelectedPath + fullfilename2003 + ".xlsx");
+            }
+               
+           
+            // app.Quit(); //закрываем приложение Excel
+
+            int tExcelPID = 0;
+            int tHwnd = 0;
+            tHwnd = app.Hwnd; //Получим HWND окна
+            System.Diagnostics.Process tExcelProcess;
+            progressBar1.Value = 100;
+            label30.Text = progressBar1.Value.ToString();
+            GetWindowThreadProcessId((IntPtr)tHwnd, out tExcelPID); //По HWND получим PID
+            tExcelProcess = System.Diagnostics.Process.GetProcessById(tExcelPID); //Подключимся к процессу
+                                                                                  ////Убийство процесса Excel
+            tExcelProcess.Kill();
+            tExcelProcess = null;
+               
+            progressBar1.Value = 0;
+            label30.Text = progressBar1.Value.ToString();
+        }
+
+        private void Excel_rep()
+        {
+           
+        }
+
 
         private void button2_Click(object sender, EventArgs e)
         {
@@ -720,6 +2752,16 @@ namespace WindowsFormsApp1
             dt.Columns.Add("Пауза, ч.", typeof(String));
             dt.Columns.Add("Числитель, с.", typeof(int));
             dt.Columns.Add("Знаменатель, с.", typeof(int));
+            //dataGridView6.Columns.Add("Оператор", "Оператор");
+            dataGridView6.Columns.Add("День", "День");
+            //dataGridView6.Columns.Add("Станок", "Станок");
+            //dataGridView6.Columns.Add("Станок", "Станок");
+            dataGridView6.Columns.Add("1 станок", "1 станок");
+            dataGridView6.Columns.Add("2 станок", "2 станок");
+            dataGridView6.Columns.Add("3 станок", "3 станок");
+            dataGridView6.Columns.Add("4 станок", "4 станок");
+            dataGridView6.Columns.Add("5 станок", "5 станок");
+            dataGridView6.Columns.Add("6 станок", "6 станок");
         }
 
         private void listBox1_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -878,5 +2920,7 @@ namespace WindowsFormsApp1
         {
 
         }
+
+        
     }
 }
