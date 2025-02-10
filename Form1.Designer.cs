@@ -125,6 +125,7 @@
             this.listBox7 = new System.Windows.Forms.ListBox();
             this.dataGridView8 = new System.Windows.Forms.DataGridView();
             this.listBox8 = new System.Windows.Forms.ListBox();
+            this.listBox9 = new System.Windows.Forms.ListBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
@@ -1111,7 +1112,7 @@
             this.listBox7.ItemHeight = 20;
             this.listBox7.Location = new System.Drawing.Point(763, 448);
             this.listBox7.Name = "listBox7";
-            this.listBox7.Size = new System.Drawing.Size(607, 364);
+            this.listBox7.Size = new System.Drawing.Size(607, 124);
             this.listBox7.TabIndex = 46;
             this.listBox7.Visible = false;
             // 
@@ -1127,7 +1128,7 @@
             dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dataGridView8.DefaultCellStyle = dataGridViewCellStyle8;
-            this.dataGridView8.Location = new System.Drawing.Point(93, 456);
+            this.dataGridView8.Location = new System.Drawing.Point(115, 461);
             this.dataGridView8.Name = "dataGridView8";
             this.dataGridView8.Size = new System.Drawing.Size(627, 356);
             this.dataGridView8.TabIndex = 47;
@@ -1142,12 +1143,22 @@
             this.listBox8.Size = new System.Drawing.Size(1149, 284);
             this.listBox8.TabIndex = 48;
             // 
+            // listBox9
+            // 
+            this.listBox9.FormattingEnabled = true;
+            this.listBox9.ItemHeight = 20;
+            this.listBox9.Location = new System.Drawing.Point(11, 323);
+            this.listBox9.Name = "listBox9";
+            this.listBox9.Size = new System.Drawing.Size(879, 204);
+            this.listBox9.TabIndex = 49;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
             this.ClientSize = new System.Drawing.Size(1846, 883);
+            this.Controls.Add(this.listBox9);
             this.Controls.Add(this.listBox8);
             this.Controls.Add(this.dataGridView8);
             this.Controls.Add(this.listBox7);
@@ -1302,6 +1313,7 @@
         private System.Windows.Forms.ListBox listBox7;
         private System.Windows.Forms.DataGridView dataGridView8;
         private System.Windows.Forms.ListBox listBox8;
+        private System.Windows.Forms.ListBox listBox9;
     }
 }
 

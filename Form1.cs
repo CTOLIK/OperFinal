@@ -23,7 +23,7 @@ namespace WindowsFormsApp1
 
         public string[,] array_zo;
         public string[,] array_ts;
-        public string[,] dataar;
+        public DataGridView dataar;
         //string filename;
         private int ERR_WIN = 0;
         //private DataGridView dataGridView1 = new DataGridView();
@@ -32,11 +32,17 @@ namespace WindowsFormsApp1
         System.Data.DataTable dt = new System.Data.DataTable("Операторы");
         System.Data.DataTable TS = new System.Data.DataTable();
         System.Data.DataTable ZO = new System.Data.DataTable();
+        List<string> legend = new List<string>();
         public Form1()
         {
             InitializeComponent();
 
 
+        }
+
+        private void id_rows_dv1(List<int> ird1)
+        {
+            
         }
 
         private void SortDataByMultiColumns()
@@ -404,6 +410,7 @@ namespace WindowsFormsApp1
                                     //MessageBox.Show(items[9].ToString());
                                     polez_s = polez_s + (Convert.ToInt32(polez_b_m) * 60);
                                     polez_s = polez_s + (Convert.ToInt32(polez_b_h) * 3600);
+                                    row["Отклонение"] = TimeSpan.Parse(items[9].ToString().Replace("\"", "")) - TimeSpan.Parse(items[12].ToString().Replace("\"", ""));
                                     row["Числитель, с."] = polez_s;
                                    // ostanov_b_h = items[10].ToString().Substring(0, 2);
                                     //ostanov_b_m = items[10].ToString().Substring(3, 2);
@@ -473,25 +480,26 @@ namespace WindowsFormsApp1
 
 
                     //dataGridView1.Sort(dataGridView1.Columns[4], ListSortDirection.Ascending);
-                    dataar = new string[12, dataGridView1.Rows.Count];
+                   // dataar = new string[12, dataGridView1.Rows.Count];
                     for (int k = 0; k < dataGridView1.Rows.Count; k++)
                     {
                         //try
                         //{
-                        dataar[0, k] = dataGridView1["Программа", k].Value.ToString();
+                        dataar[0, k].Value = dataGridView1["Программа", k].Value.ToString();
                         //MessageBox.Show(items[1].ToString());
-                        dataar[1, k] = dataGridView1["Обозначение", k].Value.ToString();
-                        dataar[2, k] = dataGridView1["Оператор", k].Value.ToString();
-                        dataar[3, k] = dataGridView1["Оборудование", k].Value.ToString();
-                        dataar[4, k] = dataGridView1["Начало", k].Value.ToString();
-                        dataar[5, k] = dataGridView1["Завершение", k].Value.ToString();
-                        dataar[6, k] = dataGridView1["Машинное время, ч.", k].Value.ToString();
-                        dataar[7, k] = dataGridView1["Остановы, ч.", k].Value.ToString();
-                        dataar[8, k] = dataGridView1["Пауза, ч.", k].Value.ToString();
-                        dataar[9, k] = dataGridView1["Счётчик", k].Value.ToString();
-                        dataar[10, k] = dataGridView1["Числитель, с.", k].Value.ToString();
-                        dataar[11, k] = dataGridView1["Знаменатель, с.", k].Value.ToString();
-                        dataar[12, k] = dataGridView1["Норма времени", k].Value.ToString();
+                        dataar[1, k].Value = dataGridView1["Обозначение", k].Value.ToString();
+                        dataar[2, k].Value = dataGridView1["Оператор", k].Value.ToString();
+                        dataar[3, k].Value = dataGridView1["Оборудование", k].Value.ToString();
+                        dataar[4, k].Value = dataGridView1["Начало", k].Value.ToString();
+                        dataar[5, k].Value = dataGridView1["Завершение", k].Value.ToString();
+                        dataar[6, k].Value = dataGridView1["Машинное время, ч.", k].Value.ToString();
+                        dataar[7, k].Value = dataGridView1["Остановы, ч.", k].Value.ToString();
+                        dataar[8, k].Value = dataGridView1["Пауза, ч.", k].Value.ToString();
+                        dataar[9, k].Value = dataGridView1["Счётчик", k].Value.ToString();
+                        dataar[10, k].Value = dataGridView1["Числитель, с.", k].Value.ToString();
+                        dataar[11, k].Value = dataGridView1["Знаменатель, с.", k].Value.ToString();
+                        dataar[12, k].Value = dataGridView1["Норма времени", k].Value.ToString();
+                        dataar[13, k].Value = dataGridView1["Отклонение", k].Value.ToString();
 
 
                         // }
@@ -504,7 +512,14 @@ namespace WindowsFormsApp1
             DataView view = dt.DefaultView;
             view.Sort = "Оборудование ASC, Начало ASC";
             dataGridView1.DataSource = view;
-            
+
+
+
+            for (int u = 0; u < dataGridView1.Rows.Count; u++)
+            {
+                if (!legend.Contains(dataGridView1["Программа", u].Value.ToString() + " - " + dataGridView1["Обозначение", u].Value.ToString())) { legend.Add(dataGridView1["Программа", u].Value.ToString() + " - " + dataGridView1["Обозначение", u].Value.ToString()); }
+            }
+
         }
 
 
@@ -528,6 +543,7 @@ namespace WindowsFormsApp1
 
         private void repoday(string operst)
         {
+            listBox9.Items.Clear();
             System.Data.DataTable prostoi = new System.Data.DataTable();
             DataRow dr_prostoi = prostoi.NewRow();
             prostoi.Columns.Add("День");
@@ -593,6 +609,10 @@ namespace WindowsFormsApp1
             ////id_start_days.Add(dataGridView1["Начало", dataGridView1.Rows.Count - 1].Value.ToString());
             //stanok_list.Add(dataGridView1["Оборудование", dataGridView1.Rows.Count - 1].Value.ToString());
 
+            //List<int> l1 = new List<int>();
+            //l1.Add(0);
+
+
             int begin = 0;
             bool moreone = false;
             for (int i = begin; i < dataGridView1.Rows.Count - 1; i++)
@@ -623,7 +643,7 @@ namespace WindowsFormsApp1
                     }
                     else
                     {
-
+                        //l1.Add(i);
                         smena_end = day_end;
                         dataGridView1.Rows[i].DefaultCellStyle.BackColor = Color.Green;
                         id_end_days.Add(dataGridView1["Завершение", i].Value.ToString());
@@ -644,7 +664,67 @@ namespace WindowsFormsApp1
 
             }
 
+            TimeSpan ts_itog_n = TimeSpan.Zero;
+            bool bfirst = false;
+            List<string> Lnorm = new List<string>();
+            List<string> Lmaxmv = new List<string>();
+            TimeSpan maxmv = TimeSpan.Zero;
 
+            //for (int p = 0; p < dataGridView1.Rows.Count; p++)
+
+
+            for (int p = 0; p < dataGridView1.Rows.Count - 1; p++)
+            {
+                if ((p < dataGridView1.Rows.Count - 2) && (dataGridView1["Программа", p].Value.ToString() != dataGridView1["Программа", p + 1].Value.ToString()) && (dataGridView1["Программа", p + 1].Value.ToString() != dataGridView1["Программа", p + 2].Value.ToString()))
+                {
+                    TimeSpan ts_otkl_2 = TimeSpan.Parse(dataGridView1["Машинное время, ч.", p + 1].Value.ToString()) - TimeSpan.Parse(dataGridView1["Норма времени", p + 1].Value.ToString());
+                    ts_itog_n += ts_otkl_2;
+                    Lnorm.Add(dataGridView1["Оборудование", p + 1].Value.ToString() + ", " + dataGridView1["Программа", p + 1].Value.ToString() + ", " + dataGridView1["Начало", p + 1].Value.ToString() + ", " + dataGridView1["Завершение", p + 1].Value.ToString() + ", " + ts_otkl_2 + ", " + ts_otkl_2 + ", " + ts_otkl_2);
+                }
+                else
+                if ((dataGridView1["Программа", p].Value.ToString() == dataGridView1["Программа", p + 1].Value.ToString()) && (dataGridView1["Программа", p].Value.ToString() != "O0"))
+                {
+                    if (dataGridView1["Оборудование", p].Value.ToString() == dataGridView1["Оборудование", p + 1].Value.ToString())
+                    {
+
+
+
+
+
+                        if (maxmv < TimeSpan.Parse(dataGridView1["Машинное время, ч.", p + 1].Value.ToString())) { maxmv = TimeSpan.Parse(dataGridView1["Машинное время, ч.", p + 1].Value.ToString()); }
+
+                        bfirst = false;
+                        //if ((dataGridView1["Счётчик", p].Value.ToString() == dataGridView1["Счётчик", p+1].Value.ToString() && dataGridView1["Счётчик", p + 1].Value.ToString() == "1"))
+                        //{
+                        //TimeSpan ts_otkl = TimeSpan.Zero;
+                        TimeSpan ts_otkl = TimeSpan.Parse(dataGridView1["Машинное время, ч.", p + 1].Value.ToString()) - TimeSpan.Parse(dataGridView1["Норма времени", p + 1].Value.ToString());
+                        ts_itog_n += ts_otkl;
+                        Lnorm.Add(dataGridView1["Оборудование", p + 1].Value.ToString() + ", " + dataGridView1["Программа", p + 1].Value.ToString() + ", " + dataGridView1["Начало", p + 1].Value.ToString() + ", " + dataGridView1["Завершение", p + 1].Value.ToString() + ", " + ts_otkl + ", " + ts_itog_n + ", " + maxmv);
+                        //}
+
+                    }
+
+
+
+                }
+                else {; ts_itog_n = TimeSpan.Zero; bfirst = true; maxmv = TimeSpan.Zero; Lmaxmv.Add(maxmv.ToString()); }
+            }
+
+                //for (int q = 0; q < Lmaxmv.Count; q++)
+                //{
+                //    for (int w = 0; w < listBox9.Items.Count; w++)
+                //    {
+                      //  !!!!!!!!!!!!!!!!
+                //    }
+                //}
+
+
+
+
+            for (int l = 0; l < Lnorm.Count; l++)
+            {
+                listBox9.Items.Add(Lnorm[l].ToString());
+            }
 
 
 
@@ -659,11 +739,12 @@ namespace WindowsFormsApp1
             dt_repod.Columns.Add("Период", typeof(string));
             dt_repod.Columns.Add("Длительность смены, ч.", typeof(string));
             dt_repod.Columns.Add("Машинное время, ч.");
+            dt_repod.Columns.Add("Отклонения", typeof(string));
             dt_repod.Columns.Add("Остановы, ч.");
             dt_repod.Columns.Add("Пауза, ч.");
             dt_repod.Columns.Add("КПД, %");
             dt_repod.Columns.Add("Номера программ");
-            dt_repod.Columns.Add("Инструмент");
+           // dt_repod.Columns.Add("Инструмент");
 
             for (int i = 0; i < id_end_days.Count; i++)
             {
@@ -702,6 +783,7 @@ namespace WindowsFormsApp1
 
 
 
+               
 
 
 
@@ -718,30 +800,48 @@ namespace WindowsFormsApp1
 
                 string programs = string.Empty;
 
-
+                //bool first_prog = true;
+                //int time_prost = 0;
+                List<int> prog = new List<int>();
 
                 for (int t = 0; t < dataGridView1.Rows.Count; t++)
                 {
 
                     if ((dataGridView4["Станок", i].Value.ToString() == dataGridView1["Оборудование", t].Value.ToString()) && (Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(0, 19)) <= Convert.ToDateTime(dataGridView1["Начало", t].Value.ToString())) && (Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(22, 19)) >= Convert.ToDateTime(dataGridView1["Завершение", t].Value.ToString())))
                     {
-                        //???
 
+
+
+
+
+
+
+                        //???
+                        
                         //  ostanov_b_h = dataGridView1["Остановы, ч.", t].Value.ToString().Substring(0, 2);
                         //   ostanov_b_m = dataGridView1["Остановы, ч.", t].Value.ToString().Substring(3, 2);
                         //   ostanov_b_s = dataGridView1["Остановы, ч.", t].Value.ToString().Substring(6, 2);
                         ostanov_s = Math.Round(Convert.ToDouble(TimeSpan.Parse(dataGridView1["Остановы, ч.", t].Value.ToString()).TotalSeconds) / 3600,2);
-                       // MessageBox.Show(ostanov_s.ToString());
-                     //   ostanov_s = ostanov_s + (Convert.ToInt32(ostanov_b_m) * 60);
-                     //   ostanov_s = ostanov_s + (Convert.ToInt32(ostanov_b_h) * 3600);
+                        // MessageBox.Show(ostanov_s.ToString());
+                        //   ostanov_s = ostanov_s + (Convert.ToInt32(ostanov_b_m) * 60);
+                        //   ostanov_s = ostanov_s + (Convert.ToInt32(ostanov_b_h) * 3600);
+
+                        
+
+                        //if (first_prog == true) { first_prog = false; }
+
+                        //    else if (dataGridView1["Программа", i].Value.ToString() == dataGridView1["Программа", t + 1].Value.ToString()) { time_prost += Convert.ToInt32(TimeSpan.Parse(dataGridView1["Машинное время, ч.", t + 1].Value.ToString()).TotalSeconds); }
+                        //    else if (dataGridView1["Программа", i].Value.ToString() != dataGridView1["Программа", t + 1].Value.ToString()) { MessageBox.Show(dataGridView1["Начало", t + 1].Value.ToString()); prog.Add(time_prost); time_prost=0; first_prog = true; }
+
+
 
                         if (!num_progs.Contains(dataGridView1["Программа", t].Value.ToString()))
                         {
-
+                           // MessageBox.Show(dataGridView1["Программа", t].Value.ToString());
                             num_progs.Add(dataGridView1["Программа", t].Value.ToString());
                         }
 
-                        if (Convert.ToInt32(ostanov_s) >= 1)
+                        if (ostanov_s >= 1)
                         {
                             dataGridView1["Остановы, ч.", t].Style.ForeColor = Color.Red;
                             dataGridView1["Остановы, ч.", t].Style.BackColor = Color.Black;
@@ -804,6 +904,64 @@ namespace WindowsFormsApp1
 
                 pause_s = 0;
                 mash_time = 0;
+
+                string day_prog = string.Empty;
+                
+                for (int y = 0; y < num_progs.Count; y++)
+                {
+                    string numofprog = num_progs[y].ToString();
+                    string allpr = string.Empty;
+                    TimeSpan tsallpr = TimeSpan.Zero;
+                    //if (day_prog.Length > 2) { day_prog = day_prog.Remove(day_prog.Length - 2, 2); }
+                    
+                    day_prog += "; "+numofprog + " - ";
+                    int k = 0;
+                    for (int o = 0; o < listBox9.Items.Count; o++)
+                    {
+                        if ((dataGridView4["Станок",i].Value.ToString() == listBox9.Items[o].ToString().Split(',')[0].Trim()) && (Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(0, 19)) <= Convert.ToDateTime(listBox9.Items[o].ToString().Split(',')[2].Trim())) && (Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(22, 19)) >= Convert.ToDateTime(listBox9.Items[o].ToString().Split(',')[3].Trim())))
+                        {
+                            if (num_progs[y].ToString() == listBox9.Items[o].ToString().Split(',')[1].Trim())
+                            {
+                                k++;
+
+                                if (tsallpr < TimeSpan.Parse(listBox9.Items[o].ToString().Split(',')[4].Trim())) { tsallpr = TimeSpan.Parse(listBox9.Items[o].ToString().Split(',')[4].Trim()); allpr = tsallpr.ToString(); }
+                               // allpr += listBox9.Items[o].ToString().Split(',')[4].Trim() + ", ";
+                            }
+
+                        // 
+
+                        }
+                    }
+
+                   
+
+                    TimeSpan sum_otkl = TimeSpan.Zero;
+
+                    for (int o = 0; o < listBox9.Items.Count; o++)
+                    {
+                        if ((dataGridView4["Станок", i].Value.ToString() == listBox9.Items[o].ToString().Split(',')[0].Trim()) && (Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(0, 19)) <= Convert.ToDateTime(listBox9.Items[o].ToString().Split(',')[2].Trim())) && (Convert.ToDateTime(dataGridView4["Период", i].Value.ToString().Substring(22, 19)) >= Convert.ToDateTime(listBox9.Items[o].ToString().Split(',')[3].Trim())))
+                        {
+                            if (num_progs[y].ToString() == listBox9.Items[o].ToString().Split(',')[1].Trim())
+                            {
+                                double maxtimesex = tsallpr.TotalSeconds * 0.7;
+                                if (TimeSpan.Parse(listBox9.Items[o].ToString().Split(',')[4].Trim()) > TimeSpan.FromSeconds(maxtimesex)) { sum_otkl += TimeSpan.Parse(listBox9.Items[o].ToString().Split(',')[4].Trim()); }
+                            }
+
+                            // 
+
+                        }
+
+                        
+                    }
+
+                    day_prog += sum_otkl.ToString(); 
+
+
+                }
+
+                day_prog = day_prog.Remove(0, 1);
+                day_prog = day_prog.Replace("O0 - 00:00:00; ", "");
+                day_prog = day_prog.Replace("О0 - 00:00:00; ", "");
 
                 double parametr_1 = TimeSpan.Parse("5:00:00").TotalSeconds;
                 for (int y = 0; y < pause_ar.Count(); y++)
@@ -883,32 +1041,26 @@ namespace WindowsFormsApp1
                 }
                 //try
                 //{
-
-
-
-
-
-
-
-
-
-
-
+              
                 //if ()
                 //double osbl = Convert.ToDouble(ostanov_s) - Convert.ToDouble(ostanov_ar[ostanov_ar.LastIndexOf(ostanov_ar.Last())]);
                 //double pausel= Convert.ToDouble(pause_s) - Convert.ToDouble(pause_ar[pause_ar.LastIndexOf(pause_ar.Last())]);
-                    double osbl = Convert.ToDouble(ostanov_s);
+                double osbl = Convert.ToDouble(ostanov_s);
                     double pausel = Convert.ToDouble(pause_s);
                     dataGridView4["Остановы, ч.", i].Value = Math.Round(osbl,2);
                     
-                    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Должно быть нормированное время на уборку того или иного станка.
-                    //if (((dataGridView4["Станок", i].Value.ToString().Contains("12T17")) || (dataGridView4["Станок", i].Value.ToString().Contains("78Т16")) || (dataGridView4["Станок", i].Value.ToString().Contains("78Т13")) || (dataGridView4["Станок", i].Value.ToString().Contains("78Т14")) || (dataGridView4["Станок", i].Value.ToString().Contains("74Т15"))) && pause_s > 3600)
-                    //{
-                    //    pausel = pausel - 3600;
-                    //}
-                    // ------------------------------------------------------------------------------------------------------------------------------------
-                    
-                    dataGridView4["Пауза, ч.", i].Value = Convert.ToString(Math.Round(Convert.ToDouble(pausel), 2));
+                
+                
+                dataGridView4["Отклонения", i].Value = day_prog;
+
+                // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! Должно быть нормированное время на уборку того или иного станка.
+                //if (((dataGridView4["Станок", i].Value.ToString().Contains("12T17")) || (dataGridView4["Станок", i].Value.ToString().Contains("78Т16")) || (dataGridView4["Станок", i].Value.ToString().Contains("78Т13")) || (dataGridView4["Станок", i].Value.ToString().Contains("78Т14")) || (dataGridView4["Станок", i].Value.ToString().Contains("74Т15"))) && pause_s > 3600)
+                //{
+                //    pausel = pausel - 3600;
+                //}
+                // ------------------------------------------------------------------------------------------------------------------------------------
+
+                dataGridView4["Пауза, ч.", i].Value = Convert.ToString(Math.Round(Convert.ToDouble(pausel), 2));
                     
                     double mash_time_up, mash_time_down;
                     mash_time_up = mash_time;
@@ -926,52 +1078,52 @@ namespace WindowsFormsApp1
                     OleDbDataAdapter adapter = new OleDbDataAdapter();
 
                     string plastini=string.Empty;
+                // OTPUSK KOM !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                //List<string> instr = new List<string>();
+                //for (int t = 0; t < num_progs2.Count; t++)
+                //{
+                //    string query = "SELECT Пластина, Комментарий FROM [ПР-П] WHERE Программа = '" + num_progs2[t] + "'";// AND Группа = " + group_stank;
+                //    OleDbCommand command = new OleDbCommand(query, myConnection);
+                //    //MessageBox.Show(query);
+                //    //string query = "SELECT Пластина FROM [ПР-П] WHERE Программа = '" + num_progs[t] + "' AND Группа = " + group_stank;
+                //    //OleDbCommand command3 = new OleDbCommand(query);
+                //    //adapter.SelectCommand = command;
+                //    //DataSet dataSet = new DataSet();
+                //    //adapter.Fill(dataSet);
+                //    OleDbDataReader reader = command.ExecuteReader();
+                //    while (reader.Read())
+                //    {
+                //       // MessageBox.Show(reader.GetString(0) + " - " + reader.GetString(1));
+                //        try
+                //        {
+                //            //MessageBox.Show(reader.GetString(0)+" - "+ reader.GetString(1));
+                //            if ((reader.GetString(0) == string.Empty) || (reader.GetString(0) ==""))
+                //            {
+                //                instr.Add(reader.GetString(1));
+                //            }
+                //            else
+                //            {
+                //                instr.Add(reader.GetString(0));
+                //            }
+                //        }
+                //        catch { instr.Add(reader.GetString(1)); }
 
-                List<string> instr = new List<string>();
-                for (int t = 0; t < num_progs2.Count; t++)
-                {
-                    string query = "SELECT Пластина, Комментарий FROM [ПР-П] WHERE Программа = '" + num_progs2[t] + "'";// AND Группа = " + group_stank;
-                    OleDbCommand command = new OleDbCommand(query, myConnection);
-                    //MessageBox.Show(query);
-                    //string query = "SELECT Пластина FROM [ПР-П] WHERE Программа = '" + num_progs[t] + "' AND Группа = " + group_stank;
-                    //OleDbCommand command3 = new OleDbCommand(query);
-                    //adapter.SelectCommand = command;
-                    //DataSet dataSet = new DataSet();
-                    //adapter.Fill(dataSet);
-                    OleDbDataReader reader = command.ExecuteReader();
-                    while (reader.Read())
-                    {
-                       // MessageBox.Show(reader.GetString(0) + " - " + reader.GetString(1));
-                        try
-                        {
-                            //MessageBox.Show(reader.GetString(0)+" - "+ reader.GetString(1));
-                            if ((reader.GetString(0) == string.Empty) || (reader.GetString(0) ==""))
-                            {
-                                instr.Add(reader.GetString(1));
-                            }
-                            else
-                            {
-                                instr.Add(reader.GetString(0));
-                            }
-                        }
-                        catch { instr.Add(reader.GetString(1)); }
-                        
-                    }
-                   // reader.Close();
-                }
+                //    }
+                //   // reader.Close();
+                //}
 
-                List<string> fin_instr = new List<string>();
-                fin_instr = instr.Distinct().ToList();
+                //List<string> fin_instr = new List<string>();
+                //fin_instr = instr.Distinct().ToList();
 
-                for (int tt = 0; tt < fin_instr.Count; tt++)
-                {
-                    plastini += fin_instr[tt]+"; ";
-                }
+                //for (int tt = 0; tt < fin_instr.Count; tt++)
+                //{
+                //    plastini += fin_instr[tt]+"; ";
+                //}
 
-                    dataGridView4["Инструмент", i].Value = plastini;
+                //    dataGridView4["Инструмент", i].Value = plastini;
 
-
-                    if (Convert.ToDouble(dataGridView4["КПД, %", i].Value) <= 50)
+                // OTPUSK KOM !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                if (Convert.ToDouble(dataGridView4["КПД, %", i].Value) <= 50)
                     {
                         dataGridView4["КПД, %", i].Style.ForeColor = Color.Red;
 
@@ -981,7 +1133,7 @@ namespace WindowsFormsApp1
                     // MessageBox.Show(mash_time_up.ToString() + " - " + osbl.ToString() + " - " + pause_s.ToString());
                 //}
                 //catch { }
-               
+              
             }
             dataGridView4.Sort(dataGridView4.Columns["Период"], ListSortDirection.Ascending);
             myConnection.Close();
@@ -1201,6 +1353,7 @@ namespace WindowsFormsApp1
             listBox6.Items.Clear();
             listBox7.Items.Clear();
             listBox8.Items.Clear();
+            listBox9.Items.Clear();
 
             repoday(comboBox2.Text);
             double seconds = 0, sec = 0;
@@ -2141,6 +2294,14 @@ namespace WindowsFormsApp1
             dataGridView8.Columns["Конец"].DefaultCellStyle.Format = "dd.MM.yyyy HH:mm:ss";
 
             List<string> L_prst = new List<string>();
+            List<int> rows_bord = new List<int>();
+
+
+          
+
+
+
+
 
             for (int r = 0; r < listBox7.Items.Count; r++)
             {
@@ -2165,6 +2326,7 @@ namespace WindowsFormsApp1
                                     {
                                         prst = Convert.ToDateTime(sorted_prostoi1.Rows[i + 1][4].ToString()) - Convert.ToDateTime(sorted_prostoi1.Rows[i][5].ToString());
                                         dataGridView8.Rows[i].DefaultCellStyle.BackColor = Color.Orange;
+                                        rows_bord.Add(i);
                                     }
                                 }
                                 catch { }
@@ -2189,6 +2351,8 @@ namespace WindowsFormsApp1
                     //MessageBox.Show(sorted_prostoi1.Rows[i][1].ToString());
                 }
             }
+
+            
 
             listBox8.Items.Clear();
 
@@ -2279,6 +2443,9 @@ namespace WindowsFormsApp1
                 }
 
             }
+
+            
+
         }
            
            // listBox7.Items[listBox7.Items.Count] += "-" + L_prst[i];
@@ -2770,6 +2937,8 @@ namespace WindowsFormsApp1
 
         private void button4_Click(object sender, EventArgs e)
         {
+            
+
             progressBar1.Value = 0;
             label30.Text = progressBar1.Value.ToString();
             DateTime beg_day, end_day;
@@ -2797,24 +2966,29 @@ namespace WindowsFormsApp1
                 worksheet.Cells[1, 2].Value = "Станок";
                 worksheet.Cells[1, 3].Value = "День";
                 worksheet.Cells[1, 4].Value = "Период";
-                worksheet.Cells[1, 5].Value = "Простои";
-                worksheet.Cells[1, 6].Value = "Длительность смены";
-                worksheet.Cells[1, 7].Value = "Машинное время, ч.";
-                worksheet.Cells[1, 8].Value = "Остановы, ч.";
-                worksheet.Cells[1, 9].Value = "Пауза, ч.";
-                worksheet.Cells[1, 10].Value = "КПД, %";
-                worksheet.Cells[1, 11].Value = "Программы";
-                worksheet.Cells[1, 12].Value = "Инструмент";
-                worksheet.Cells[1, 13].Value = "Итог";
+                worksheet.Cells[1, 5].Value = "Переналадка";
+                worksheet.Cells[1, 6].Value = "Отклонение";
+                worksheet.Cells[1, 7].Value = "Длительность смены";
+                worksheet.Cells[1, 8].Value = "Машинное время, ч.";
+                worksheet.Cells[1, 9].Value = "Остановы, ч.";
+                worksheet.Cells[1, 10].Value = "Пауза, ч.";
+                worksheet.Cells[1, 11].Value = "КПД, %";
+                worksheet.Cells[1, 12].Value = "Программы";
+               // worksheet.Cells[1, 13].Value = "Инструмент";
+               // worksheet.Cells[1, 14].Value = "Итог";
                 
-                var shapk = worksheet.get_Range("A1", "M1").Cells.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
+                var shapk = worksheet.get_Range("A1", "L1").Cells.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
                 //worksheet.get_Range("A1", "J1").AutoFilter();
 
                 // worksheet.get_Range("A1", "J1").Cells.VerticalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
-                worksheet.get_Range("A1", "M1").Cells.Font.Size = 14;
+                worksheet.get_Range("A1", "L1").Cells.Font.Size = 14;
                 
-                worksheet.get_Range("A1", "M1").Cells.Font.Bold = true;
+                worksheet.get_Range("A1", "L1").Cells.Font.Bold = true;
                 int k = 2;
+                int rowcount = 0;
+
+                
+
 
                 foreach (string opert in comboBox2.Items)
                 {
@@ -3074,35 +3248,37 @@ namespace WindowsFormsApp1
                         prostoi_done.Add(prost);
 
                     }
-                    
 
+                   
 
                     for (int i = 0; i < dataGridView4.Rows.Count; i++)
                     {
                         //try
                         //{
+                        rowcount++;
                             all++;
                             worksheet.Cells[i + k, 1].Value = opert;
                             worksheet.Cells[i + k, 2].Value = dataGridView4[1, i].Value.ToString();
                             worksheet.Cells[i + k, 3].Value = Convert.ToDateTime(dataGridView4[2, i].Value.ToString());
                             worksheet.Cells[i + k, 4].Value = dataGridView4[3, i].Value.ToString();
                             worksheet.Cells[i + k, 5].Value = prostoi_done[i];
-                            worksheet.Cells[i + k, 6].Value = dataGridView4[4, i].Value.ToString();
-                            worksheet.Cells[i + k, 7].Value = Convert.ToDouble(dataGridView4[5, i].Value.ToString());
-                            worksheet.Cells[i + k, 8].Value = Convert.ToDouble(dataGridView4[6, i].Value.ToString());
+                            worksheet.Cells[i + k, 6].Value = dataGridView4[6, i].Value.ToString();
+                            worksheet.Cells[i + k, 7].Value = dataGridView4[4, i].Value.ToString();
+                            worksheet.Cells[i + k, 8].Value = Convert.ToDouble(dataGridView4[5, i].Value.ToString());
                             worksheet.Cells[i + k, 9].Value = Convert.ToDouble(dataGridView4[7, i].Value.ToString());
                             worksheet.Cells[i + k, 10].Value = Convert.ToDouble(dataGridView4[8, i].Value.ToString());
-                            worksheet.Cells[i + k, 10].Font.Color = Color.Red;
+                            worksheet.Cells[i + k, 11].Value = Convert.ToDouble(dataGridView4[9, i].Value.ToString());
+                            worksheet.Cells[i + k, 11].Font.Color = Color.Red;
                         //try
                         //{
-                            worksheet.Cells[i + k, 11].Value = dataGridView4[9, i].Value.ToString();
                             worksheet.Cells[i + k, 12].Value = dataGridView4[10, i].Value.ToString();
+                          //  worksheet.Cells[i + k, 13].Value = dataGridView4[11, i].Value.ToString();
                         //}
                         //catch { }
                             
-                            if (worksheet.Cells[i + k, 10].Value >= Convert.ToDouble(50))
+                            if (worksheet.Cells[i + k, 11].Value >= Convert.ToDouble(50))
                             {
-                                worksheet.Cells[i + k, 10].Font.Color = Color.Green;
+                                worksheet.Cells[i + k, 11].Font.Color = Color.Green;
                             }
                             if (beg_day > Convert.ToDateTime(dataGridView4[2, i].Value))
                             {
@@ -3133,9 +3309,9 @@ namespace WindowsFormsApp1
                 // int begin_range=1;
                 for (int i = 2; i < k; i++)
                 {
-                    if ((worksheet.Cells[i, 10].Value is null))
+                    if ((worksheet.Cells[i, 11].Value is null))
                     {
-                        if ((worksheet.Cells[i + 1, 10].Value != null))
+                        if ((worksheet.Cells[i + 1, 11].Value != null))
                         {
                             bid.Add(i + 1);
                         }
@@ -3149,20 +3325,22 @@ namespace WindowsFormsApp1
                     //}
                 }
 
+                int rowcount2 = 0;
+
                 for (int i = 0; i < bid.Count; i++)
                 {
 
                     for (int u = 2; u < k; u++)
                     {
-                        if (worksheet.Cells[u, 10].Value == null)
+                        if (worksheet.Cells[u, 11].Value == null)
                         {
 
                            // double sum = app.WorksheetFunction.Sum(worksheet.get_Range("I" + bid[i], "I" + eid[i]));
-                            double sum_MASH = app.WorksheetFunction.Sum(worksheet.get_Range("G" + bid[i], "G" + eid[i]));
-                            double sum_OST = app.WorksheetFunction.Sum(worksheet.get_Range("H" + bid[i], "H" + eid[i]));
-                            double sum_PAUSE = app.WorksheetFunction.Sum(worksheet.get_Range("I" + bid[i], "I" + eid[i]));
+                            double sum_MASH = app.WorksheetFunction.Sum(worksheet.get_Range("H" + bid[i], "H" + eid[i]));
+                            double sum_OST = app.WorksheetFunction.Sum(worksheet.get_Range("I" + bid[i], "I" + eid[i]));
+                            double sum_PAUSE = app.WorksheetFunction.Sum(worksheet.get_Range("J" + bid[i], "J" + eid[i]));
 
-
+                            rowcount2++;
                             //List<string> row_perenal = new List<string>();
                             //TimeSpan perenal = TimeSpan.Zero;
                             //for (int l = bid[i]; l <= eid[i]; l++)
@@ -3177,27 +3355,28 @@ namespace WindowsFormsApp1
 
 
                             //TimeSpan sum_smen = TimeSpan.Parse(app.WorksheetFunction.Sum(worksheet.get_Range("H" + bid[i], "H" + eid[i])));
-                            worksheet.Cells[u, 10].Value = Math.Round((sum_MASH / (sum_MASH + sum_OST + sum_PAUSE)) * 100, 2);
-                            worksheet.Cells[u, 13].Value = "Да";
-                            worksheet.Cells[u, 10].Interior.Color = Color.Red;
-                            worksheet.Cells[u, 10].Font.Color = Color.White;
+                            worksheet.Cells[u, 11].Value = Math.Round((sum_MASH / (sum_MASH + sum_OST + sum_PAUSE)) * 100, 2);
+                           // worksheet.Cells[u, 14].Value = "Да";
+                            worksheet.Cells[u, 11].Interior.Color = Color.Red;
+                            worksheet.Cells[u, 11].Font.Color = Color.White;
+                            worksheet.Cells[u, 11].Font.Bold = true;
                             worksheet.Cells[u, 10].Font.Bold = true;
                             worksheet.Cells[u, 9].Font.Bold = true;
                             worksheet.Cells[u, 8].Font.Bold = true;
                             worksheet.Cells[u, 7].Font.Bold = true;
-                            worksheet.Cells[u, 2].Font.Bold = true;
-                            worksheet.Cells[u, 1].Font.Bold = true;
+                            worksheet.Cells[u, 6].Font.Bold = true;
                             worksheet.Cells[u, 5].Font.Bold = true;
                             worksheet.Cells[u, 4].Font.Bold = true;
-                            worksheet.Cells[u, 6].Font.Bold = true;
-                            if (worksheet.Cells[u, 10].Value >= Convert.ToDouble(50)) { worksheet.Cells[u, 10].Interior.Color = Color.Green; }
-                            double prog = app.WorksheetFunction.Average(worksheet.get_Range("G" + bid[i], "G" + eid[i]));
-                            worksheet.Cells[u, 7].Value = Math.Round(prog, 2);// + " - " + Math.Round(sum_MASH, 2);
-                            double ost = app.WorksheetFunction.Average(worksheet.get_Range("H" + bid[i], "H" + eid[i]));
-                            worksheet.Cells[u, 8].Value = Math.Round(ost, 2);// + " - " + Math.Round(sum_OST, 2);
-                            double pause = app.WorksheetFunction.Average(worksheet.get_Range("I" + bid[i], "I" + eid[i]));
-                            worksheet.Cells[u, 9].Value = Math.Round(pause, 2);// + " - " + Math.Round(sum_PAUSE, 2);
-                            worksheet.Cells[u, 2].Value = worksheet.Cells[u - 1, 2].Value;
+                            worksheet.Cells[u, 7].Font.Bold = true;
+                            worksheet.Cells[u, 1].Font.Bold = true;
+                            if (worksheet.Cells[u, 11].Value >= Convert.ToDouble(50)) { worksheet.Cells[u, 11].Interior.Color = Color.Green; }
+                            double prog = app.WorksheetFunction.Average(worksheet.get_Range("H" + bid[i], "H" + eid[i]));
+                            worksheet.Cells[u, 8].Value = Math.Round(prog, 2);// + " - " + Math.Round(sum_MASH, 2);
+                            double ost = app.WorksheetFunction.Average(worksheet.get_Range("I" + bid[i], "I" + eid[i]));
+                            worksheet.Cells[u, 9].Value = Math.Round(ost, 2);// + " - " + Math.Round(sum_OST, 2);
+                            double pause = app.WorksheetFunction.Average(worksheet.get_Range("J" + bid[i], "J" + eid[i]));
+                            worksheet.Cells[u, 10].Value = Math.Round(pause, 2);// + " - " + Math.Round(sum_PAUSE, 2);
+                            //worksheet.Cells[u, 2].Value = worksheet.Cells[u - 1, 2].Value;
                             worksheet.Cells[u, 4].Value = begday_ar[i].ToString().Substring(0, 10) + " - " + endday_ar[i].ToString().Substring(0, 10);
                             worksheet.Cells[u, 1].Value = worksheet.Cells[u-1, 1].Value;
                            // worksheet.Cells[u, 5].Value = bid[i] + " ||| " + eid[i];
@@ -3226,28 +3405,43 @@ namespace WindowsFormsApp1
                         int int_hours = Convert.ToInt32(Convert.ToInt32(days) * 24) + Convert.ToInt32(hours);
                         string str_itog = int_hours.ToString() + ':' + itog.Split('.')[1].Split(':')[1] + ':' + itog.Split('.')[1].Split(':')[2];
                         //MessageBox.Show(emptyxls_id[i].ToString());
-                        worksheet.Cells[emptyxls_id[i], 6].Value = str_itog;
+                        worksheet.Cells[emptyxls_id[i], 7].Value = str_itog;
                     }
                     else
                     {
-                        worksheet.Cells[emptyxls_id[i], 6].Value = ar_smen[i].ToString();
+                        worksheet.Cells[emptyxls_id[i], 7].Value = ar_smen[i].ToString();
                     }
 
                 }
 
+                int rowsexcel = rowcount2 + rowcount;
+                int otstup = 6;
+
+                List<string> legend_itog = new List<string>();
+
+                for (int r = 0; r < legend.Count; r++) 
+                { 
+                    if ((legend[r].Split('-')[0].Trim() != "O0") && (legend[r].Split('-')[1].Trim() != "")) 
+                    {
+                        //legend.Remove(legend[r]); MessageBox.Show(legend[r]); 
+                        legend_itog.Add(legend[r]);
+                    }  
+                }
+                //MessageBox.Show(legend.Count.ToString());
+
+                for (int r = 0; r < legend_itog.Count; r++) { worksheet.Cells[otstup + rowsexcel + r, 1].Value = legend_itog[r].ToString(); }
+                    
 
 
-
-
-                var cells = worksheet.get_Range("A1", "M" + (k - 1));
+                var cells = worksheet.get_Range("A1", "L" + (k - 1));
                 cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlInsideVertical].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // внутренние вертикальные
                 cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlInsideHorizontal].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // внутренние горизонтальные            
                 cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeTop].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // верхняя внешняя
                 cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeRight].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // правая внешняя
                 cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeLeft].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous; // левая внешняя
                 cells.Borders[Microsoft.Office.Interop.Excel.XlBordersIndex.xlEdgeBottom].LineStyle = Microsoft.Office.Interop.Excel.XlLineStyle.xlContinuous;
-                worksheet.get_Range("A2", "M" + (k - 1)).Cells.Font.Size = 13;
-                worksheet.get_Range("J1", "J" + (k - 1)).Cells.Font.Bold = true;
+                worksheet.get_Range("A2", "L" + (k - 1)).Cells.Font.Size = 13;
+                worksheet.get_Range("K1", "K" + (k - 1)).Cells.Font.Bold = true;
                 cells.Columns.EntireColumn.AutoFit();
                 cells = null;
 
@@ -3259,11 +3453,11 @@ namespace WindowsFormsApp1
             //    worksheet.Cells[1, 3].Value = "День";
             //    worksheet.Cells[1, 4].Value = "Период";
             //    worksheet.Cells[1, 5].Value = "Длительность смены";
-            //    worksheet.Cells[1, 6].Value = "Машинное время, ч., (среднее-сумма)";
-            //    worksheet.Cells[1, 7].Value = "Остановы, ч., (среднее-сумма)";
-            //    worksheet.Cells[1, 8].Value = "Пауза, ч., (среднее-сумма)";
-            //    worksheet.Cells[1, 9].Value = "КПД, %";
-            //    worksheet.Cells[1, 13].Value = "Итог";
+            //    worksheet.Cells[1, 7].Value = "Машинное время, ч., (среднее-сумма)";
+            //    worksheet.Cells[1, 8].Value = "Остановы, ч., (среднее-сумма)";
+            //    worksheet.Cells[1, 9].Value = "Пауза, ч., (среднее-сумма)";
+            //    worksheet.Cells[1, 10].Value = "КПД, %";
+            //    worksheet.Cells[1, 14].Value = "Итог";
             //    var shapk = worksheet.get_Range("A1", "J1").Cells.HorizontalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
             //   // worksheet.get_Range("A1", "J1").Cells.VerticalAlignment = Microsoft.Office.Interop.Excel.XlHAlign.xlHAlignCenter;
             //    worksheet.get_Range("A1", "J1").Cells.Font.Size = 14;
@@ -3636,7 +3830,7 @@ namespace WindowsFormsApp1
             //    cells.Columns.EntireColumn.AutoFit();
             //    cells = null;
             //}
-            worksheet.get_Range("A1", "M1").Cells.Style.WrapText = true;
+            worksheet.get_Range("A1", "L1").Cells.Style.WrapText = true;
 
             folderBrowserDialog1.Description = "Выберите директорию для сохранения файла отчёта";
             string fullfilename2003;
@@ -3724,6 +3918,7 @@ namespace WindowsFormsApp1
             dt.Columns.Add("Остановы, ч.", typeof(String));
             dt.Columns.Add("Пауза, ч.", typeof(String));
             dt.Columns.Add("Счётчик", typeof(String));
+            dt.Columns.Add("Отклонение", typeof(TimeSpan));
             dt.Columns.Add("Числитель, с.", typeof(int));
             dt.Columns.Add("Знаменатель, с.", typeof(int));
             //dataGridView6.Columns.Add("Оператор", "Оператор");
@@ -3738,8 +3933,14 @@ namespace WindowsFormsApp1
             dataGridView6.Columns.Add("6 станок", "6 станок");
         }
 
-        private void Norm_time()
+        private void Norm_time(List<int> id_rows)
         {
+            //int time_notm = Convert.ToInt32(TimeSpan.Parse(dataGridView1[0, 7].Value.ToString()).TotalSeconds);
+
+            //for (int i = 0; i < dataGridView1.Rows.Count; i++) 
+            //{ 
+            //    int time              
+            //}
 
         }
 
