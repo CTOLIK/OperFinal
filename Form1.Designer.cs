@@ -1151,6 +1151,7 @@
             this.listBox9.Name = "listBox9";
             this.listBox9.Size = new System.Drawing.Size(879, 204);
             this.listBox9.TabIndex = 49;
+            this.listBox9.Visible = false;
             // 
             // Form1
             // 
