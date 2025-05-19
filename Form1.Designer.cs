@@ -211,7 +211,7 @@
             this.groupBox1.Controls.Add(this.textBox2);
             this.groupBox1.Controls.Add(this.textBox1);
             this.groupBox1.ForeColor = System.Drawing.Color.White;
-            this.groupBox1.Location = new System.Drawing.Point(1419, 5);
+            this.groupBox1.Location = new System.Drawing.Point(1419, 6);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Size = new System.Drawing.Size(415, 481);
             this.groupBox1.TabIndex = 20;
@@ -446,7 +446,6 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.dataGridView7);
             this.groupBox2.Controls.Add(this.label25);
             this.groupBox2.Controls.Add(this.label26);
             this.groupBox2.Controls.Add(this.label27);
@@ -481,10 +480,11 @@
             // 
             this.dataGridView7.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
             this.dataGridView7.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView7.Location = new System.Drawing.Point(6, 59);
+            this.dataGridView7.Location = new System.Drawing.Point(639, 50);
             this.dataGridView7.Name = "dataGridView7";
             this.dataGridView7.Size = new System.Drawing.Size(400, 416);
             this.dataGridView7.TabIndex = 46;
+            this.dataGridView7.Visible = false;
             // 
             // label25
             // 
@@ -493,6 +493,7 @@
             this.label25.Name = "label25";
             this.label25.Size = new System.Drawing.Size(0, 20);
             this.label25.TabIndex = 48;
+            this.label25.Visible = false;
             // 
             // label26
             // 
@@ -502,6 +503,8 @@
             this.label26.Size = new System.Drawing.Size(168, 20);
             this.label26.TabIndex = 47;
             this.label26.Text = "Станок выключён, м:";
+            this.label26.Visible = false;
+            this.label26.Click += new System.EventHandler(this.label26_Click);
             // 
             // label27
             // 
@@ -510,6 +513,7 @@
             this.label27.Name = "label27";
             this.label27.Size = new System.Drawing.Size(0, 20);
             this.label27.TabIndex = 46;
+            this.label27.Visible = false;
             // 
             // label28
             // 
@@ -519,6 +523,8 @@
             this.label28.Size = new System.Drawing.Size(157, 20);
             this.label28.TabIndex = 45;
             this.label28.Text = "Станок включён, м:";
+            this.label28.Visible = false;
+            this.label28.Click += new System.EventHandler(this.label28_Click);
             // 
             // label19
             // 
@@ -713,7 +719,7 @@
             this.listBox1.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.listBox1.FormattingEnabled = true;
             this.listBox1.ItemHeight = 20;
-            this.listBox1.Location = new System.Drawing.Point(919, 13);
+            this.listBox1.Location = new System.Drawing.Point(919, 14);
             this.listBox1.Name = "listBox1";
             this.listBox1.Size = new System.Drawing.Size(120, 84);
             this.listBox1.TabIndex = 23;
@@ -725,7 +731,7 @@
             this.listBox2.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.listBox2.FormattingEnabled = true;
             this.listBox2.ItemHeight = 20;
-            this.listBox2.Location = new System.Drawing.Point(919, 128);
+            this.listBox2.Location = new System.Drawing.Point(919, 129);
             this.listBox2.Name = "listBox2";
             this.listBox2.Size = new System.Drawing.Size(120, 84);
             this.listBox2.TabIndex = 24;
@@ -808,7 +814,7 @@
             dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
             dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
             this.dataGridView5.DefaultCellStyle = dataGridViewCellStyle5;
-            this.dataGridView5.Location = new System.Drawing.Point(1142, 261);
+            this.dataGridView5.Location = new System.Drawing.Point(1142, 262);
             this.dataGridView5.Name = "dataGridView5";
             this.dataGridView5.ReadOnly = true;
             this.dataGridView5.Size = new System.Drawing.Size(251, 210);
@@ -822,7 +828,7 @@
             this.groupBox3.Controls.Add(this.radioButton1);
             this.groupBox3.Controls.Add(this.radioButton2);
             this.groupBox3.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.groupBox3.Location = new System.Drawing.Point(699, 252);
+            this.groupBox3.Location = new System.Drawing.Point(699, 253);
             this.groupBox3.Name = "groupBox3";
             this.groupBox3.Size = new System.Drawing.Size(340, 69);
             this.groupBox3.TabIndex = 28;
@@ -858,7 +864,7 @@
             this.groupBox4.Controls.Add(this.radioButton3);
             this.groupBox4.Controls.Add(this.radioButton4);
             this.groupBox4.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.groupBox4.Location = new System.Drawing.Point(699, 327);
+            this.groupBox4.Location = new System.Drawing.Point(699, 328);
             this.groupBox4.Name = "groupBox4";
             this.groupBox4.Size = new System.Drawing.Size(340, 69);
             this.groupBox4.TabIndex = 29;
@@ -894,7 +900,7 @@
             this.groupBox5.Controls.Add(this.radioButton5);
             this.groupBox5.Controls.Add(this.radioButton6);
             this.groupBox5.ForeColor = System.Drawing.SystemColors.ButtonHighlight;
-            this.groupBox5.Location = new System.Drawing.Point(699, 402);
+            this.groupBox5.Location = new System.Drawing.Point(699, 403);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(340, 69);
             this.groupBox5.TabIndex = 30;
@@ -1031,6 +1037,7 @@
             this.groupBox6.TabIndex = 40;
             this.groupBox6.TabStop = false;
             this.groupBox6.Text = "Параметры отчёта";
+            this.groupBox6.Visible = false;
             // 
             // radioButton10
             // 
@@ -1142,6 +1149,7 @@
             this.listBox8.Name = "listBox8";
             this.listBox8.Size = new System.Drawing.Size(1149, 284);
             this.listBox8.TabIndex = 48;
+            this.listBox8.Visible = false;
             // 
             // listBox9
             // 
@@ -1158,7 +1166,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(64)))), ((int)(((byte)(64)))), ((int)(((byte)(64)))));
-            this.ClientSize = new System.Drawing.Size(1846, 883);
+            this.ClientSize = new System.Drawing.Size(1846, 885);
             this.Controls.Add(this.listBox9);
             this.Controls.Add(this.listBox8);
             this.Controls.Add(this.dataGridView8);
@@ -1180,6 +1188,7 @@
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
+            this.Controls.Add(this.dataGridView7);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.listBox6);
             this.Controls.Add(this.dataGridView6);
