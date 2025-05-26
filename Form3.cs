@@ -34,6 +34,7 @@ namespace WindowsFormsApp1
         //            {
         //                datagr[11, j].Value = arr[15];
         //                datagr[12, j].Value = arr[16];
+       
         //            }
                    
         //        }

@@ -5,6 +5,7 @@
         /// <summary>
         /// Обязательная переменная конструктора.
         /// </summary>
+        
         private System.ComponentModel.IContainer components = null;
 
         /// <summary>
@@ -63,7 +64,6 @@
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.listBox3 = new System.Windows.Forms.ListBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.dataGridView7 = new System.Windows.Forms.DataGridView();
             this.label25 = new System.Windows.Forms.Label();
             this.label26 = new System.Windows.Forms.Label();
             this.label27 = new System.Windows.Forms.Label();
@@ -85,6 +85,7 @@
             this.label14 = new System.Windows.Forms.Label();
             this.label16 = new System.Windows.Forms.Label();
             this.comboBox2 = new System.Windows.Forms.ComboBox();
+            this.dataGridView7 = new System.Windows.Forms.DataGridView();
             this.listBox4 = new System.Windows.Forms.ListBox();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.listBox2 = new System.Windows.Forms.ListBox();
@@ -130,8 +131,8 @@
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
             this.groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView7)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView3)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView7)).BeginInit();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView5)).BeginInit();
             this.groupBox3.SuspendLayout();
@@ -476,16 +477,6 @@
             this.groupBox2.Text = "Оператор 2";
             this.groupBox2.Enter += new System.EventHandler(this.groupBox2_Enter);
             // 
-            // dataGridView7
-            // 
-            this.dataGridView7.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
-            this.dataGridView7.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView7.Location = new System.Drawing.Point(639, 50);
-            this.dataGridView7.Name = "dataGridView7";
-            this.dataGridView7.Size = new System.Drawing.Size(400, 416);
-            this.dataGridView7.TabIndex = 46;
-            this.dataGridView7.Visible = false;
-            // 
             // label25
             // 
             this.label25.AutoSize = true;
@@ -703,6 +694,16 @@
             this.comboBox2.Size = new System.Drawing.Size(270, 28);
             this.comboBox2.TabIndex = 3;
             this.comboBox2.SelectedIndexChanged += new System.EventHandler(this.comboBox2_SelectedIndexChanged);
+            // 
+            // dataGridView7
+            // 
+            this.dataGridView7.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
+            this.dataGridView7.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView7.Location = new System.Drawing.Point(639, 50);
+            this.dataGridView7.Name = "dataGridView7";
+            this.dataGridView7.Size = new System.Drawing.Size(400, 416);
+            this.dataGridView7.TabIndex = 46;
+            this.dataGridView7.Visible = false;
             // 
             // listBox4
             // 
@@ -1155,7 +1156,7 @@
             // 
             this.listBox9.FormattingEnabled = true;
             this.listBox9.ItemHeight = 20;
-            this.listBox9.Location = new System.Drawing.Point(11, 323);
+            this.listBox9.Location = new System.Drawing.Point(142, 262);
             this.listBox9.Name = "listBox9";
             this.listBox9.Size = new System.Drawing.Size(879, 204);
             this.listBox9.TabIndex = 49;
@@ -1211,8 +1212,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView7)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView3)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView7)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView5)).EndInit();
