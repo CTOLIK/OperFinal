@@ -127,6 +127,7 @@
             this.dataGridView8 = new System.Windows.Forms.DataGridView();
             this.listBox8 = new System.Windows.Forms.ListBox();
             this.listBox9 = new System.Windows.Forms.ListBox();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView2)).BeginInit();
@@ -1158,9 +1159,14 @@
             this.listBox9.ItemHeight = 20;
             this.listBox9.Location = new System.Drawing.Point(142, 262);
             this.listBox9.Name = "listBox9";
-            this.listBox9.Size = new System.Drawing.Size(879, 204);
+            this.listBox9.Size = new System.Drawing.Size(1029, 304);
             this.listBox9.TabIndex = 49;
-            this.listBox9.Visible = false;
+            // 
+            // backgroundWorker1
+            // 
+            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
+            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
             // Form1
             // 
@@ -1325,6 +1331,7 @@
         private System.Windows.Forms.DataGridView dataGridView8;
         private System.Windows.Forms.ListBox listBox8;
         private System.Windows.Forms.ListBox listBox9;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
     }
 }
 
