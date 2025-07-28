@@ -1125,6 +1125,7 @@ namespace WindowsFormsApp1
                 //if ()
                 //double osbl = Convert.ToDouble(ostanov_s) - Convert.ToDouble(ostanov_ar[ostanov_ar.LastIndexOf(ostanov_ar.Last())]);
                 //double pausel= Convert.ToDouble(pause_s) - Convert.ToDouble(pause_ar[pause_ar.LastIndexOf(pause_ar.Last())]);
+                
                 double osbl = Convert.ToDouble(ostanov_s);
                     double pausel = Convert.ToDouble(pause_s);
                     dataGridView4["Остановы, ч.", i].Value = Math.Round(osbl,2);
@@ -1143,12 +1144,15 @@ namespace WindowsFormsApp1
                 dataGridView4["Пауза, ч.", i].Value = Convert.ToString(Math.Round(Convert.ToDouble(pausel), 2));
                     
                     double mash_time_up, mash_time_down;
-                    mash_time_up = mash_time;
+                    mash_time_up = Math.Round(Convert.ToDouble(mash_time) / 3600, 2); 
                     dataGridView4["Оператор", i].Value = comboBox2.Text;
                     dataGridView4["Номера программ", i].Value = programs;
-                    dataGridView4["Машинное время, ч.", i].Value = Math.Round(Convert.ToDouble(mash_time_up) / 3600, 2);
+                    dataGridView4["Машинное время, ч.", i].Value = mash_time_up;
                     mash_time_down = Convert.ToDouble(dataGridView4["Машинное время, ч.", i].Value) + Convert.ToDouble(dataGridView4["Остановы, ч.", i].Value) + Convert.ToDouble(dataGridView4["Пауза, ч.", i].Value);
-                    dataGridView4["КПД, %", i].Value = Math.Round(Math.Round(Convert.ToDouble(mash_time_up) / 3600,2) / Math.Round(TimeSpan.Parse(dataGridView4["Длительность смены, ч.", i].Value.ToString()).TotalSeconds / 3600,2) * 100, 2);//(Convert.ToDouble(osbl + pausel + mash_time_up))) * 100, 2);
+                   // dataGridView4["КПД, %", i].Value = Math.Round(Math.Round(Convert.ToDouble(mash_time_up) / 3600,2) / Math.Round(TimeSpan.Parse(dataGridView4["Длительность смены, ч.", i].Value.ToString()).TotalSeconds / 3600,2) * 100, 2);//(Convert.ToDouble(osbl + pausel + mash_time_up))) * 100, 2);
+                    dataGridView4["КПД, %", i].Value = Math.Round(Convert.ToDouble(mash_time_up) / (Convert.ToDouble(osbl + pausel + mash_time_up)) * 100, 2);
+
+                //MessageBox.Show(mash_time_up.ToString() + " - " + osbl.ToString() + " - " + pausel.ToString() + " - " + mash_time_up.ToString());    
 
                     int group_stank = int.Parse(dataGridView4["Станок", i].Value.ToString()[1].ToString());
                 //MessageBox.Show(group_stank.ToString() + " - " + dataGridView4["Станок", i].Value.ToString()[1]);
